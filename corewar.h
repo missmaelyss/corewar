@@ -10,6 +10,10 @@
 /*                                                                            */
 /* ************************************************************************** */
 
+#ifndef COREWAR_H
+
+# define COREWAR_H
+
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
@@ -18,3 +22,14 @@
 #include <stdio.h>
 
 #include "op.h"
+
+typedef struct        s_env
+{
+	int			name;
+	int			comment;
+	int			quote_open;
+	header_t    header;
+	char		*mem;
+}                    t_env;
+
+#endif
