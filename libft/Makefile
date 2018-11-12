@@ -73,7 +73,8 @@ ft_lstnew.c ft_lstdelone.c ft_lstdel.c ft_lstadd.c ft_lstiter.c ft_lstmap.c
 CC = gcc
 LDFLAGS=
 CFLAGS = -Wall -Wextra -Werror
-OBJ = $(SRC:.c=.o)
+OBJDIR = obj
+OBJ = $(SRC:%.c=$(OBJDIR)/%.o)
 
 all : $(NAME)
 
@@ -82,7 +83,7 @@ $(NAME) : $(OBJ)
 	@echo ""
 	@echo "\x1b[32;01m$(NAME) SUCCESSFULLY CREATED !\x1b[32;00m"
 
-%.o: %.c
+$(OBJDIR)/%.o: %.c
 	@$(CC) -o $@ -c $< $(CFLAGS)
 	@echo "\x1b[32;01m.\x1b[32;00m\c"
 

@@ -5,7 +5,8 @@ CC = gcc
 LDFLAGS=
 CFLAGS = -Wall -Wextra -Werror
 LIBFT = libft/libft.a
-OBJ = $(SRC:.c=.o)
+OBJDIR = obj
+OBJ = $(SRC:%.c=$(OBJDIR)/%.o)
 SRC = main.c op.c
 
 all : $(NAME)
@@ -15,7 +16,7 @@ $(NAME) : $(LIBFT) $(OBJ)
 	@$(CC) -o $@ $^ $(LDFLAGS)
 	@echo "\x1b[32;01m$(NAME) SUCCESSFULLY CREATED !\x1b[32;00m"
 
-%.o: %.c
+$(OBJDIR)/%.o: %.c
 	@$(CC) -o $@ -c $< $(CFLAGS)
 	@echo "\x1b[32;01m.\x1b[32;00m\c"
 
