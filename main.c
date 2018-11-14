@@ -133,12 +133,32 @@ int ft_del_char_ptr(char **tmp)
   return (1);
 }
 
+int ft_str_in_op_tab(char *str)
+{
+  int n;
+  int i;
+
+  n = 0;
+  i = 0;
+  while (str[i] == '\t')
+    i++;
+  while (op_tab[n].name != NULL)
+  {
+    if (ft_strcmp(op_tab[n].name, &str[i]) == 0)
+    {
+      return (n + 1);
+    }
+    n++;
+  }
+  return (0);
+}
 
 int main(int ac, char const *av[])
 {
   t_mem mem;
   char  **tmp;
   int   n = 0;
+  int   i;
 
   if (ac > 1)
   {
@@ -149,12 +169,16 @@ int main(int ac, char const *av[])
       if (ft_strcmp(".comment", tmp[0]) == 0)
       {
         fill_header_comment(&mem, n);
-        printf("%s\n", mem.header.comment);
+        //printf("%s\n", mem.header.comment);
       }
       if (ft_strcmp(".name", tmp[0]) == 0)
       {
         fill_header_name(&mem, n);
-        printf("%s\n", mem.header.prog_name);
+        //printf("%s\n", mem.header.prog_name);
+      }
+      if ((i = ft_str_in_op_tab(tmp[0])) != 0)
+      {
+        printf("On a trouve l'instruction : %s (%d), en tant que 1er mot dans la ligne: %s\n", op_tab[i - 1].name, i, mem.data[n]);
       }
       ft_del_char_ptr(tmp);
       n++;
