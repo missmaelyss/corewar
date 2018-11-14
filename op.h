@@ -93,4 +93,11 @@ typedef struct        s_op
 
 t_op    op_tab[17];
 
+typedef struct        s_mem
+{
+    header_t  header;
+    char      *file;
+    char      **data;
+}                    t_mem;
+
 #endif

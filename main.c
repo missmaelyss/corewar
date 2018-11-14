@@ -50,41 +50,114 @@ int	ft_strchrword(char *str, char *word)
 	return (words);
 }
 
+int fill_mem(t_mem *mem, char const *av)
+{
+  int fd_r;
+  char buffer[1000];
+  char *tmp;
+
+  mem->file = NULL;
+  fd_r = open(av, O_RDONLY);
+  while (read(fd_r, buffer, 1000))
+  {
+    tmp = ft_strjoin(mem->file, buffer);
+    free(mem->file);
+    mem->file = tmp;
+    ft_bzero(buffer, 1000);
+  }
+  mem->data = ft_strsplit(mem->file, '\n');
+  return (fd_r);
+}
+
+int fill_header_name(t_mem *mem, int n)
+{
+  char  *start;
+  char  *tmp;
+  int   i;
+
+  i = 1;
+  start = ft_strdup(ft_strchr(mem->data[n], '"'));
+  while (start[i] != '"' && i - 1 < PROG_NAME_LENGTH + 1)
+  {
+    mem->header.prog_name[i - 1] = start[i];
+    if (start[i + 1] == 0)
+    {
+      n++;
+      tmp = ft_strjoin(start,"\n");
+      free(start);
+      start = ft_strjoin(tmp, mem->data[n]);
+      free(tmp);
+    }
+    i++;
+  }
+  free(start);
+  return (1);
+}
+
+int fill_header_comment(t_mem *mem, int n)
+{
+  char  *start;
+  char  *tmp;
+  int   i;
+
+  i = 1;
+  start = ft_strdup(ft_strchr(mem->data[n], '"'));
+  while (start[i] != '"' && i - 1 < COMMENT_LENGTH + 1 && start[i] != 0)
+  {
+    mem->header.comment[i - 1] = start[i];
+    if (start[i + 1] == 0)
+    {
+      n++;
+      tmp = ft_strjoin(start,"\n");
+      free(start);
+      start = ft_strjoin(tmp, mem->data[n]);
+      free(tmp);
+    }
+    i++;
+  }
+  free(start);
+  return (1);
+}
+
+int ft_del_char_ptr(char **tmp)
+{
+  int i;
+
+  i = 0;
+  while (tmp[i] != NULL)
+  {
+    free(tmp[i]);
+    i++;
+  }
+  free(tmp);
+  return (1);
+}
+
+
 int main(int ac, char const *av[])
 {
-  header_t  header;
-  int n;
-  int i;
-  int fd;
-  int new_fd;
-  char *line;
+  t_mem mem;
+  char  **tmp;
+  int   n = 0;
 
-  header.magic = COREWAR_EXEC_MAGIC;
   if (ac > 1)
   {
-    new_fd = create_new_cor(av[1]);
-    printf("%d\n", new_fd);
-    //printf("%zd\n", write(new_fd, header.prog_name, (2180)));
-    if (new_fd != 0)
+    fill_mem(&mem, av[1]);
+    while (mem.data[n] != NULL)
     {
-      fd = open(av[1], O_RDONLY);
-      n = 1;
-      while (get_next_line(fd, &line) > 0)
-    	{
-          //printf("%s\n", line);
-          if (ft_strchrword(line, NAME_CMD_STRING) == 1)
-    		    printf("ligne %d : %s\n", n, line);
-          if (ft_strchrword(line, COMMENT_CMD_STRING) == 1)
-              printf("ligne %d : %s\n", n, line);
-          i = 0;
-          while (op_tab[i].name != 0)
-          {
-              if (ft_strchrword(line,op_tab[i].name) == 1)
-                  printf("   ligne %d : %s %s\n", n, line, op_tab[i].name);
-              i++;
-          }
-          n++;
-    	}
+      tmp = ft_strsplit(mem.data[n], ' ');
+      if (ft_strcmp(".comment", tmp[0]) == 0)
+      {
+        fill_header_comment(&mem, n);
+        printf("%s\n", mem.header.comment);
+      }
+      if (ft_strcmp(".name", tmp[0]) == 0)
+      {
+        fill_header_name(&mem, n);
+        printf("%s\n", mem.header.prog_name);
+      }
+      ft_del_char_ptr(tmp);
+      n++;
     }
   }
 	return 0;
