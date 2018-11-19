@@ -98,6 +98,8 @@ typedef struct        s_mem
     header_t  header;
     char      *file;
     char      **data;
+    char      *tmp;
+    int       i;
 }                    t_mem;
 
 #endif
