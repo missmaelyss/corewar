@@ -153,6 +153,38 @@ int ft_str_in_op_tab(char *str)
   return (0);
 }
 
+/*
+**  i is the index of the instruction in op_tab
+*/
+
+int ft_instruction(int i, char **word_in_line)
+{
+  int n;
+
+  n = 1;
+  printf("%s : ", op_tab[i - 1].name);
+  while (word_in_line[n] != NULL)
+  {
+    if (ft_strrchr(word_in_line[n], '#') != NULL)
+      word_in_line[n + 1] = NULL;
+    // while (ft_strrchr(word_in_line[n], '\t') != NULL)
+    //   ft_strrchr(word_in_line[n], '\t')[0] = '\0';
+    // if (ft_strrchr(word_in_line[n], ',') != NULL)
+    //   ft_strrchr(word_in_line[n], ',')[0] = '\0';
+    // printf("|%s| ", word_in_line[n]);
+    n++;
+  }
+  printf("%d %d\n", op_tab[i - 1].param_nb, n-1);
+  if (op_tab[i - 1].param_nb - (n - 1) != 0)
+  {
+    printf("Mauvais nombre d'argument dans l'instruction\n");
+    return (0);
+  }
+  else
+
+  return (1);
+}
+
 int main(int ac, char const *av[])
 {
   t_mem mem;
@@ -178,7 +210,8 @@ int main(int ac, char const *av[])
       }
       if ((i = ft_str_in_op_tab(tmp[0])) != 0)
       {
-        printf("On a trouve l'instruction : %s (%d), en tant que 1er mot dans la ligne: %s\n", op_tab[i - 1].name, i, mem.data[n]);
+        ft_instruction(i, tmp);
+        //printf("On a trouve l'instruction : %s (%d), en tant que 1er mot dans la ligne: %s\n", op_tab[i - 1].name, i, mem.data[n]);
       }
       ft_del_char_ptr(tmp);
       n++;
