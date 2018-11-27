@@ -419,7 +419,6 @@ char *add_space(char *str)
 {
   int n;
   int i = 0;
-  int j;
   int max_len;
 
   n = 0;
@@ -431,25 +430,23 @@ char *add_space(char *str)
     if (ft_strncmp(op_tab[i].name, &str[n], ft_strlen(op_tab[i].name)) == 0 &&
     (ft_strlen(op_tab[i].name) > ft_strlen(op_tab[max_len - 1].name) || max_len == 0))
     {
-      printf("ici : %s\n", op_tab[n].name);
+      //printf("ici : %s\n", op_tab[n].name);
       max_len = i + 1;
     }
     i++;
   }
-  j = n + ft_strlen(op_tab[max_len].name);
-  //printf("%d\n", max_len);
-  // if (max_len && str[n + ft_strlen(op_tab[max_len - 1].name) + 1] != ' ')
-  // {
-  //   printf("oui %c\n", str[n + ft_strlen(op_tab[max_len - 1].name) + 1]);
-  //   str = (char *)realloc(str, ft_strlen(str + 2));
-  //   i = ft_strlen(str) + 1;
-  //   while (i != j)
-  //   {
-  //     str[i] = str[i - 1];
-  //     i--;
-  //   }
-  //   str[i] = ' ';
-  // }
+  n = n + ft_strlen(op_tab[max_len - 1].name);
+  if (max_len && str[n] == '%')
+  {
+    i = ft_strlen(str) + 1;
+    str = (char *)realloc(str, ft_strlen(str + 2));
+    while (i != n)
+    {
+      str[i] = str[i - 1];
+      i--;
+    }
+    str[i] = ' ';
+  }
   return (str);
 }
 
