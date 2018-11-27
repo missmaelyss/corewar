@@ -76,7 +76,7 @@ int fill_mem(t_mem *mem, char const *av)
 
   mem->file = NULL;
   fd_r = open(av, O_RDONLY);
-  while (read(fd_r, buffer, 1000))
+  while (read(fd_r, buffer, 1000 - 1))
   {
     tmp = ft_strjoin(mem->file, buffer);
     free(mem->file);
@@ -194,29 +194,119 @@ int ft_str_in_op_tab(char *str)
   return (0);
 }
 
+int    ft_str_is_digit(char *str)
+{
+    int i;
+
+    i = -1;
+    while (str[++i])
+        if (!((str[i] >= '0' && str[i] <= '9') || str[i] == '-'))
+            return (0);
+    return (1);
+}
+
+int reverse_endian_int(int a)
+{
+  char  ret[4];
+  char  tmp;
+
+  *(int *)ret = a;
+  tmp = ret[0];
+  ret[0] = ret[3];
+  ret[3] = tmp;
+  tmp = ret[1];
+  ret[1] = ret[2];
+  ret[2] = tmp;
+  return (*(int *)ret);
+   // return ((a << 24) & ((a & 0xff00) << 8) & ((a & 0xff0000) >> 8) & (a >> 24));
+}
+
+short reverse_endian_short(short a)
+{
+  char  ret[2];
+  char  tmp;
+
+  *(short *)ret = a;
+  tmp = ret[0];
+  ret[0] = ret[1];
+  ret[1] = tmp;
+  return (*(short *)ret);
+}
+
 /*
 **  ft_mem_instr(int i, char *word, t_mem *mem)
 **  store in t_mem mem.tmp the opcode of the instruction
 **  i is the index of the instruction in op_tab
 */
 
-int ft_mem_instr(int i, char *word, t_mem *mem)
+int ft_mem_instr(int n, int i, char *word, t_mem *mem)
 {
   int   size;
-  int   n;
 
+  // printf("%s\n", word);
   if (ft_strcmp(op_tab[i - 1].name, word) == 0)
   {
-    size = 1;
+    size = 1 + op_tab[i - 1].encoding_byte;
     if (!(mem->tmp = (char *)realloc(mem->tmp, mem->i + size)))
       return (0);
-    n = 0;
-    mem->tmp[mem->i + n] = op_tab[i - 1].opcode;
+    mem->tmp[mem->i] = op_tab[i - 1].opcode;
+    if (op_tab[i - 1].encoding_byte)
+      mem->tmp[mem->i + 1] = 0;
     (mem->i) += size;
+
   }
   else
   {
+    if (word[0] == DIRECT_CHAR)
+    {
+      if ((op_tab[i - 1].possible_param[n - 1] & T_DIR) != T_DIR)
+      {
+        printf("Error : Bad possible_param\n");
+        return (0);
+      }
+      size = (op_tab[i - 1].direct_size == 1) ? IND_SIZE : DIR_SIZE;
+      if (!(mem->tmp = (char *)realloc(mem->tmp, mem->i + size)))
+        return (0);
+      mem->tmp[mem->i] = 0;
+      //if (ft_str_is_digit(&word[1]))
+      //{
+    //  printf("size = %d DIR_SIZE = %d\n%s %d\n", size, DIR_SIZE, &word[1], ft_atoi(&word[1]));
+        if (size == DIR_SIZE)
+          *(int *)(mem->tmp + mem->i) = reverse_endian_int(ft_atoi(&word[1]));
+        else
+          *(short *)(mem->tmp + mem->i) = reverse_endian_short((short)ft_atoi(&word[1]));
+      //}
+      (mem->i) += size;
+    }
+    else if (word[0] == REGISTER_CHAR)
+    {
+      if ((op_tab[i - 1].possible_param[n - 1] & T_REG) != T_REG)
+      {
+        printf("Error : Bad possible_param\n");
+        return (0);
+      }
+      size = 1;
+      if (!(mem->tmp = (char *)realloc(mem->tmp, mem->i + size)))
+        return (0);
+      mem->tmp[mem->i] = ft_atoi(&word[1]);
+      (mem->i) += size;
+    }
+    else
+    {
+      if ((op_tab[i - 1].possible_param[n - 1] & T_IND) != T_IND)
+      {
+        printf("Error : Bad possible_param\n");
+        return (0);
+      }
+      //printf("%s\n", word);
+      //printf("%d %d\n", (short)ft_atoi(&word[0]), reverse_endian_short((short)ft_atoi(&word[0])));
 
+      size = IND_SIZE;
+      if (!(mem->tmp = (char *)realloc(mem->tmp, mem->i + size)))
+        return (0);
+      *(short *)(mem->tmp + mem->i) = reverse_endian_short((short)ft_atoi(&word[0]));
+      (mem->i) += size;
+    }
   }
   return (1);
 }
@@ -233,7 +323,7 @@ void ft_clear_word(char **word)
   n = 0;
   while ((*word)[n] != '\0')
   {
-    if ((*word)[n] == '\t' || (*word)[n] == ',')
+    if ((*word)[n] == '\t' || (*word)[n] == SEPARATOR_CHAR)
     {
       while ((*word)[n] != '\0')
       {
@@ -260,18 +350,107 @@ int   ft_instruction(int i, char **word_in_line, t_mem *mem)
   n = 0;
   while (word_in_line[n] != NULL)
   {
-    if (ft_strrchr(word_in_line[n], '#') != NULL)
+    // printf("%s|", word_in_line[n]);
+    if (ft_strrchr(word_in_line[n], COMMENT_CHAR) != NULL)
       word_in_line[n + 1] = NULL;
     ft_clear_word(&(word_in_line[n]));
-    ft_mem_instr(i, word_in_line[n], mem);
+    // printf("%s ", word_in_line[n]);
+    ft_mem_instr(n, i, word_in_line[n], mem);
     n++;
   }
+  // printf("\n");
   if (op_tab[i - 1].param_nb - (n - 1) != 0)
   {
     printf("Mauvais nombre d'argument dans l'instruction\n");
     return (0);
   }
   return (1);
+}
+
+// char *add_space(char *str)
+// {
+//   int n;
+//   int j;
+//   int k;
+//   int i;
+//   int size;
+//
+//   i = 0;
+//   n = 0;
+//   while (str && str[i] && (str[i] == ' ' || str[i] == '\t'))
+//     i++;
+//   while (op_tab[n].name != NULL)
+//   {
+//     j = ft_strlen(op_tab[n].name);
+//     k = 0;
+//     while (str[k + i] == op_tab[n].name[k] && k != j)
+//       k++;
+//     if (str[i + k + 1] != 'i')
+//     {
+//       if ((int)ft_strlen(str) != j)
+//       {
+//         size = ft_strlen(str) + 2;
+//         str = (char *)realloc(str, size);
+//         while (size > i + k + 1)
+//         {
+//           str[size] = str[size - 1];
+//           size--;
+//         }
+//         str[size] = ' ';
+//         return (str);
+//       }
+//     }
+//     n++;
+//   }
+//   return (str);
+// }
+
+// char  *add_char(char *str, char c, int i)
+// {
+//   char *tmp;
+//   int n;
+//
+//   tmp = (char *)malloc(sizeof(char) * (ft_strlen(str) + 2));
+//   n = 0;
+//   while ()
+// }
+
+char *add_space(char *str)
+{
+  int n;
+  int i = 0;
+  int j;
+  int max_len;
+
+  n = 0;
+  max_len = 0;
+  while (str && str[n] && (str[n] == ' ' || str[n] == '\t'))
+    n++;
+  while (op_tab[i].name != NULL)
+  {
+    if (ft_strncmp(op_tab[i].name, &str[n], ft_strlen(op_tab[i].name)) == 0 &&
+    (ft_strlen(op_tab[i].name) > ft_strlen(op_tab[max_len - 1].name) || max_len == 0))
+    {
+      printf("ici : %s\n", op_tab[n].name);
+      max_len = i + 1;
+    }
+    i++;
+  }
+  j = n + ft_strlen(op_tab[max_len].name);
+  //printf("%d\n", max_len);
+  // if (max_len && str[n + ft_strlen(op_tab[max_len - 1].name) + 1] != ' ')
+  // {
+  //   printf("oui %c\n", str[n + ft_strlen(op_tab[max_len - 1].name) + 1]);
+  //   str = (char *)realloc(str, ft_strlen(str + 2));
+  //   i = ft_strlen(str) + 1;
+  //   while (i != j)
+  //   {
+  //     str[i] = str[i - 1];
+  //     i--;
+  //   }
+  //   str[i] = ' ';
+  // }
+  return (str);
 }
 
 int main(int ac, char const *av[])
@@ -286,6 +465,8 @@ int main(int ac, char const *av[])
     fill_mem(&mem, av[1]);
     while (mem.data[n] != NULL)
     {
+      mem.data[n] = add_space(mem.data[n]);
+      printf("%s\n", mem.data[n]);
       tmp = ft_strsplit(mem.data[n], ' ');
       if (ft_strcmp(".comment", tmp[0]) == 0)
       {
@@ -305,8 +486,9 @@ int main(int ac, char const *av[])
       ft_del_char_ptr(tmp);
       n++;
     }
-
-    printf("%s\n", mem.tmp);
+    // printf("%s\n", mem.header.prog_name);
+    // printf("%s\n", mem.header.comment);
+    write(create_new_cor(av[1]), mem.tmp, mem.i);
   }
 	return 0;
 }

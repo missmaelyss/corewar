@@ -38,6 +38,7 @@
 #define COMMENT_CHAR			'#'
 #define LABEL_CHAR				':'
 #define DIRECT_CHAR				'%'
+#define REGISTER_CHAR			'r'
 #define SEPARATOR_CHAR			','
 
 #define LABEL_CHARS				"abcdefghijklmnopqrstuvwxyz_0123456789"
@@ -84,7 +85,7 @@ typedef struct        s_op
     char            *name;
     unsigned int    param_nb;
     unsigned int    possible_param[3];
-    unsigned int    opcode;
+    unsigned char   opcode;
     unsigned int    cycle;
     char            *description;
     unsigned int    encoding_byte;
