@@ -463,14 +463,20 @@ char *add_space(char *str)
 
 void ft_add_label(t_mem *mem,  char *str)
 {
-  if (mem->n_label > 0)
-    printf("1 %s\n", mem->labels[0]);
-  mem->labels = (char **)realloc(mem->labels, mem->n_label + 1);
+  int n;
+  char **tmp;
+
+  n = 0;
+  tmp = (char **)realloc(mem->labels, mem->n_label + 1);
+  while (n < mem->n_label)
+  {
+    tmp = mem->labels[n];
+    n++;
+  }
+  tmp[n] = ft_strdup(str);
+  tmp[n][ft_strlen(tmp[n]) - 1] = '\0';
   //mem->i_label = (int *)realloc(mem->i_label, mem->n_label + 1);
-  mem->labels[mem->n_label] = ft_strdup(str);
-  mem->labels[mem->n_label][ft_strlen(mem->labels[mem->n_label]) - 1] = '\0';
-  if (mem->n_label > 0)
-    printf("2 %s %s\n", mem->labels[mem->n_label], mem->labels[0]);
+  mem->labels = tmp;
   // mem->labels[mem->n_label + 1] = NULL;
   //mem->i_label[mem->n_label] = mem->i;
   mem->n_label++;
