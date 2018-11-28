@@ -461,20 +461,25 @@ char *add_space(char *str)
   return (str);
 }
 
+// void ft_del_mem(mem->labels)
+
 void ft_add_label(t_mem *mem,  char *str)
 {
   int n;
   char **tmp;
 
   n = 0;
-  tmp = (char **)realloc(mem->labels, mem->n_label + 1);
+  tmp = (char **)malloc(sizeof(char *) * (mem->n_label + 2));
   while (n < mem->n_label)
   {
-    tmp = mem->labels[n];
+    tmp[n] = ft_strdup(mem->labels[n]);
+    free(mem->labels[n]);
     n++;
   }
+  free(mem->labels);
   tmp[n] = ft_strdup(str);
   tmp[n][ft_strlen(tmp[n]) - 1] = '\0';
+  tmp[n + 1] = NULL;
   //mem->i_label = (int *)realloc(mem->i_label, mem->n_label + 1);
   mem->labels = tmp;
   // mem->labels[mem->n_label + 1] = NULL;
@@ -499,9 +504,6 @@ int main(int ac, char const *av[])
   ft_bzero(&mem, sizeof(mem));
   if (ac > 1)
   {
-    mem.n_label = 0;
-    mem.labels = NULL;
-    // mem.n_label = NULL;
     fill_mem(&mem, av[1]);
     while (mem.data[n] != NULL)
     {
@@ -512,22 +514,16 @@ int main(int ac, char const *av[])
         ft_add_label(&mem, tmp[0]);
         //printf("1 %s\n", mem.labels[mem.n_label - 1]);
       }
-      if (mem.n_label)
-        printf("3 %s\n", mem.labels[0]);
       if (ft_strcmp(".comment", tmp[0]) == 0)
       {
         fill_header_comment(&mem, n);
         // printf("%s\n", mem.header.comment);
       }
-      if (mem.n_label)
-        printf("4 %s\n", mem.labels[0]);
       if (ft_strcmp(".name", tmp[0]) == 0)
       {
         fill_header_name(&mem, n);
         // printf("%s\n", mem.header.prog_name);
       }
-      if (mem.n_label)
-        printf("5 %s\n", mem.labels[0]);
       if ((i = ft_str_in_op_tab(tmp[0])) != 0)
       {
         ft_instruction(i, tmp, &mem);
@@ -535,26 +531,23 @@ int main(int ac, char const *av[])
           // printf("4 %s\n", mem.labels[0]);
         //printf("On a trouve l'instruction : %s (%d), en tant que 1er mot dans la ligne: %s\n", op_tab[i - 1].name, i, mem.data[n]);
       }
-      if (mem.n_label)
-        printf("6 %s\n", mem.labels[0]);
       ft_del_char_ptr(tmp);
       n++;
     }
     // printf("%s\n", mem.header.prog_name);
     // printf("%s\n", mem.header.comment);
     n = 0;
-    // printf("%d\n", mem.n_label);
-    // while (n < mem.n_label)
-    // {
-    //   // i = 0;
-    //   // while (i < (int)ft_strlen(mem.labels[n]))
-    //   // {
-    //   //   printf("%c", mem.labels[n][i]);
-    //   //   i++;
-    //   // }
-    //   printf("  %d %s\n", n, mem.labels[n]);
-    //   n++;
-    // }
+    while (n < mem.n_label)
+    {
+      // i = 0;
+      // while (i < (int)ft_strlen(mem.labels[n]))
+      // {
+      //   printf("%c", mem.labels[n][i]);
+      //   i++;
+      // }
+      printf("  %d %s\n", n, mem.labels[n]);
+      n++;
+    }
     write(create_new_cor(av[1]), mem.tmp, mem.i);
   }
 	return 0;
