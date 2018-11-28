@@ -233,6 +233,64 @@ short reverse_endian_short(short a)
   return (*(short *)ret);
 }
 
+int   ft_fill_mem(int n, int i, char *word, t_mem *mem)
+{
+  int size;
+
+  if (word[0] == DIRECT_CHAR)
+  {
+    if ((op_tab[i - 1].possible_param[n - 1] & T_DIR) != T_DIR)
+    {
+      printf("Error : Bad possible_param\n");
+      return (0);
+    }
+    size = (op_tab[i - 1].direct_size == 1) ? IND_SIZE : DIR_SIZE;
+    if (!(mem->tmp = (char *)realloc(mem->tmp, mem->i + size)))
+      return (0);
+    mem->tmp[mem->i] = 0;
+    //if (ft_str_is_digit(&word[1]))
+    //{
+  //  printf("size = %d DIR_SIZE = %d\n%s %d\n", size, DIR_SIZE, &word[1], ft_atoi(&word[1]));
+      if (size == DIR_SIZE)
+        *(int *)(mem->tmp + mem->i) = reverse_endian_int(ft_atoi(&word[1]));
+      else
+        *(short *)(mem->tmp + mem->i) = reverse_endian_short((short)ft_atoi(&word[1]));
+    //}
+    (mem->i) += size;
+    return ((op_tab[i - 1].direct_size == 1) ? (IND_CODE) : (DIR_CODE));
+  }
+  else if (word[0] == REGISTER_CHAR)
+  {
+    if ((op_tab[i - 1].possible_param[n - 1] & T_REG) != T_REG)
+    {
+      printf("Error : Bad possible_param\n");
+      return (0);
+    }
+    size = 1;
+    if (!(mem->tmp = (char *)realloc(mem->tmp, mem->i + size)))
+      return (0);
+    mem->tmp[mem->i] = ft_atoi(&word[1]);
+    (mem->i) += size;
+    return (REG_CODE);
+  }
+  else
+  {
+    if ((op_tab[i - 1].possible_param[n - 1] & T_IND) != T_IND)
+    {
+      printf("Error : Bad possible_param\n");
+      return (0);
+    }
+    //printf("%s\n", word);
+    //printf("%d %d\n", (short)ft_atoi(&word[0]), reverse_endian_short((short)ft_atoi(&word[0])));
+    size = IND_SIZE;
+    if (!(mem->tmp = (char *)realloc(mem->tmp, mem->i + size)))
+      return (0);
+    *(short *)(mem->tmp + mem->i) = reverse_endian_short((short)ft_atoi(&word[0]));
+    (mem->i) += size;
+    return (IND_CODE);
+  }
+}
+
 /*
 **  ft_mem_instr(int i, char *word, t_mem *mem)
 **  store in t_mem mem.tmp the opcode of the instruction
@@ -243,7 +301,6 @@ int ft_mem_instr(int n, int i, char *word, t_mem *mem)
 {
   int   size;
 
-  // printf("%s\n", word);
   if (ft_strcmp(op_tab[i - 1].name, word) == 0)
   {
     size = 1 + op_tab[i - 1].encoding_byte;
@@ -251,64 +308,17 @@ int ft_mem_instr(int n, int i, char *word, t_mem *mem)
       return (0);
     mem->tmp[mem->i] = op_tab[i - 1].opcode;
     if (op_tab[i - 1].encoding_byte)
+    {
+      mem->enc_b_p = &(mem->tmp[mem->i + 1]);
       mem->tmp[mem->i + 1] = 0;
-    (mem->i) += size;
-
-  }
-  else
-  {
-    if (word[0] == DIRECT_CHAR)
-    {
-      if ((op_tab[i - 1].possible_param[n - 1] & T_DIR) != T_DIR)
-      {
-        printf("Error : Bad possible_param\n");
-        return (0);
-      }
-      size = (op_tab[i - 1].direct_size == 1) ? IND_SIZE : DIR_SIZE;
-      if (!(mem->tmp = (char *)realloc(mem->tmp, mem->i + size)))
-        return (0);
-      mem->tmp[mem->i] = 0;
-      //if (ft_str_is_digit(&word[1]))
-      //{
-    //  printf("size = %d DIR_SIZE = %d\n%s %d\n", size, DIR_SIZE, &word[1], ft_atoi(&word[1]));
-        if (size == DIR_SIZE)
-          *(int *)(mem->tmp + mem->i) = reverse_endian_int(ft_atoi(&word[1]));
-        else
-          *(short *)(mem->tmp + mem->i) = reverse_endian_short((short)ft_atoi(&word[1]));
-      //}
-      (mem->i) += size;
-    }
-    else if (word[0] == REGISTER_CHAR)
-    {
-      if ((op_tab[i - 1].possible_param[n - 1] & T_REG) != T_REG)
-      {
-        printf("Error : Bad possible_param\n");
-        return (0);
-      }
-      size = 1;
-      if (!(mem->tmp = (char *)realloc(mem->tmp, mem->i + size)))
-        return (0);
-      mem->tmp[mem->i] = ft_atoi(&word[1]);
-      (mem->i) += size;
     }
     else
-    {
-      if ((op_tab[i - 1].possible_param[n - 1] & T_IND) != T_IND)
-      {
-        printf("Error : Bad possible_param\n");
-        return (0);
-      }
-      //printf("%s\n", word);
-      //printf("%d %d\n", (short)ft_atoi(&word[0]), reverse_endian_short((short)ft_atoi(&word[0])));
-
-      size = IND_SIZE;
-      if (!(mem->tmp = (char *)realloc(mem->tmp, mem->i + size)))
-        return (0);
-      *(short *)(mem->tmp + mem->i) = reverse_endian_short((short)ft_atoi(&word[0]));
-      (mem->i) += size;
-    }
+      mem->enc_b_p = NULL;
+    (mem->i) += size;
+    return (0);
   }
-  return (1);
+  else
+    return (ft_fill_mem(n, i, word, mem));
 }
 
 /*
@@ -346,19 +356,21 @@ void ft_clear_word(char **word)
 int   ft_instruction(int i, char **word_in_line, t_mem *mem)
 {
   int n;
+  char enc_b;
 
   n = 0;
   while (word_in_line[n] != NULL)
   {
-    // printf("%s|", word_in_line[n]);
     if (ft_strrchr(word_in_line[n], COMMENT_CHAR) != NULL)
       word_in_line[n + 1] = NULL;
     ft_clear_word(&(word_in_line[n]));
-    // printf("%s ", word_in_line[n]);
-    ft_mem_instr(n, i, word_in_line[n], mem);
+    enc_b += ft_mem_instr(n, i, word_in_line[n], mem);
+    enc_b = enc_b << 2;
     n++;
   }
-  // printf("\n");
+  enc_b = enc_b << (6 - ((n - 1) * 2));
+  if (mem->enc_b_p)
+    *(mem->enc_b_p) = enc_b;
   if (op_tab[i - 1].param_nb - (n - 1) != 0)
   {
     printf("Mauvais nombre d'argument dans l'instruction\n");
@@ -405,36 +417,35 @@ int   ft_instruction(int i, char **word_in_line, t_mem *mem)
 //   return (str);
 // }
 
-// char  *add_char(char *str, char c, int i)
-// {
-//   char *tmp;
-//   int n;
-//
-//   tmp = (char *)malloc(sizeof(char) * (ft_strlen(str) + 2));
-//   n = 0;
-//   while ()
-// }
-
-char *add_space(char *str)
+int   find_max_len(char *str)
 {
-  int n;
-  int i = 0;
+  int i;
   int max_len;
 
-  n = 0;
+  i = 0;
   max_len = 0;
-  while (str && str[n] && (str[n] == ' ' || str[n] == '\t'))
-    n++;
   while (op_tab[i].name != NULL)
   {
-    if (ft_strncmp(op_tab[i].name, &str[n], ft_strlen(op_tab[i].name)) == 0 &&
+    if (ft_strncmp(op_tab[i].name, str, ft_strlen(op_tab[i].name)) == 0 &&
     (ft_strlen(op_tab[i].name) > ft_strlen(op_tab[max_len - 1].name) || max_len == 0))
     {
-      //printf("ici : %s\n", op_tab[n].name);
       max_len = i + 1;
     }
     i++;
   }
+  return (max_len);
+}
+
+char *add_space(char *str)
+{
+  int n;
+  int i;
+  int max_len;
+
+  n = 0;
+  while (str && str[n] && (str[n] == ' ' || str[n] == '\t'))
+    n++;
+  max_len = find_max_len(&str[n]);
   n = n + ft_strlen(op_tab[max_len - 1].name);
   if (max_len && str[n] == '%')
   {
@@ -450,6 +461,28 @@ char *add_space(char *str)
   return (str);
 }
 
+void ft_add_label(t_mem *mem,  char *str)
+{
+  if (mem->n_label > 0)
+    printf("1 %s\n", mem->labels[0]);
+  mem->labels = (char **)realloc(mem->labels, mem->n_label + 1);
+  //mem->i_label = (int *)realloc(mem->i_label, mem->n_label + 1);
+  mem->labels[mem->n_label] = ft_strdup(str);
+  mem->labels[mem->n_label][ft_strlen(mem->labels[mem->n_label]) - 1] = '\0';
+  if (mem->n_label > 0)
+    printf("2 %s %s\n", mem->labels[mem->n_label], mem->labels[0]);
+  // mem->labels[mem->n_label + 1] = NULL;
+  //mem->i_label[mem->n_label] = mem->i;
+  mem->n_label++;
+}
+
+int   ft_str_is_label(char *str)
+{
+  if (str[ft_strlen(str) - 1] == ':')
+    return (1);
+  return (0);
+}
+
 int main(int ac, char const *av[])
 {
   t_mem mem;
@@ -457,34 +490,65 @@ int main(int ac, char const *av[])
   int   n = 0;
   int   i;
 
+  ft_bzero(&mem, sizeof(mem));
   if (ac > 1)
   {
+    mem.n_label = 0;
+    mem.labels = NULL;
+    // mem.n_label = NULL;
     fill_mem(&mem, av[1]);
     while (mem.data[n] != NULL)
     {
       mem.data[n] = add_space(mem.data[n]);
-      printf("%s\n", mem.data[n]);
       tmp = ft_strsplit(mem.data[n], ' ');
+      if (ft_str_is_label(tmp[0]))
+      {
+        ft_add_label(&mem, tmp[0]);
+        //printf("1 %s\n", mem.labels[mem.n_label - 1]);
+      }
+      if (mem.n_label)
+        printf("3 %s\n", mem.labels[0]);
       if (ft_strcmp(".comment", tmp[0]) == 0)
       {
         fill_header_comment(&mem, n);
-        //printf("%s\n", mem.header.comment);
+        // printf("%s\n", mem.header.comment);
       }
+      if (mem.n_label)
+        printf("4 %s\n", mem.labels[0]);
       if (ft_strcmp(".name", tmp[0]) == 0)
       {
         fill_header_name(&mem, n);
-        //printf("%s\n", mem.header.prog_name);
+        // printf("%s\n", mem.header.prog_name);
       }
+      if (mem.n_label)
+        printf("5 %s\n", mem.labels[0]);
       if ((i = ft_str_in_op_tab(tmp[0])) != 0)
       {
         ft_instruction(i, tmp, &mem);
+        // if (mem.n_label)
+          // printf("4 %s\n", mem.labels[0]);
         //printf("On a trouve l'instruction : %s (%d), en tant que 1er mot dans la ligne: %s\n", op_tab[i - 1].name, i, mem.data[n]);
       }
+      if (mem.n_label)
+        printf("6 %s\n", mem.labels[0]);
       ft_del_char_ptr(tmp);
       n++;
     }
     // printf("%s\n", mem.header.prog_name);
     // printf("%s\n", mem.header.comment);
+    n = 0;
+    // printf("%d\n", mem.n_label);
+    // while (n < mem.n_label)
+    // {
+    //   // i = 0;
+    //   // while (i < (int)ft_strlen(mem.labels[n]))
+    //   // {
+    //   //   printf("%c", mem.labels[n][i]);
+    //   //   i++;
+    //   // }
+    //   printf("  %d %s\n", n, mem.labels[n]);
+    //   n++;
+    // }
     write(create_new_cor(av[1]), mem.tmp, mem.i);
   }
 	return 0;
