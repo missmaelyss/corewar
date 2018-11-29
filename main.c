@@ -624,12 +624,20 @@ void fill_label_in_mem(t_mem *mem)
   }
 }
 
+/*
+**  unsigned int		magic;
+**  char				    prog_name[PROG_NAME_LENGTH + 1];
+**  unsigned int		prog_size;
+**  char				    comment[COMMENT_LENGTH + 1];
+*/
+
 int main(int ac, char const *av[])
 {
   t_mem mem;
   char  **tmp;
   int   n = 0;
   int   i;
+  int   fd;
 
   ft_bzero(&mem, sizeof(mem));
   if (ac > 1)
@@ -666,19 +674,13 @@ int main(int ac, char const *av[])
       n++;
     }
     fill_label_in_mem(&mem);
-    // n = 0;
-    // // while (n < mem.n_label)
-    // // {
-    // //   // i = 0;
-    // //   // while (i < (int)ft_strlen(mem.labels[n]))
-    // //   // {
-    // //   //   printf("%c", mem.labels[n][i]);
-    // //   //   i++;
-    // //   // }
-    // //   printf("  %d %s\n", n, mem.labels[n]);
-    // //   n++;
-    // // }
-    write(create_new_cor(av[1]), mem.tmp, mem.i);
+    fd = create_new_cor(av[1]);
+    mem.header.magic = reverse_endian_int(COREWAR_EXEC_MAGIC);
+    mem.header.prog_size = reverse_endian_int(mem.i);
+    write(fd, &mem.header, sizeof(mem.header));
+
+    //printf("%d %s %d %s\n", mem.header.magic, mem.header.prog_name, mem.header.prog_size, mem.header.comment);
+    write(fd, mem.tmp, mem.i);
   }
 	return 0;
 }
