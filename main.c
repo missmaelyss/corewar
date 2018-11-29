@@ -405,11 +405,11 @@ int ft_mem_instr(int n, int i, char *word, t_mem *mem)
     mem->tmp[mem->i] = op_tab[i - 1].opcode;
     if (op_tab[i - 1].encoding_byte)
     {
-      mem->enc_b_p = (unsigned char *)&(mem->tmp[mem->i + 1]);
+      mem->enc_b_i = mem->i;
       mem->tmp[mem->i + 1] = 0;
     }
     else
-      mem->enc_b_p = NULL;
+      mem->enc_b_i = -1;
     (mem->i) += size;
     return (0);
   }
@@ -456,8 +456,6 @@ int   ft_instruction(int i, char **word_in_line, t_mem *mem)
   char *tmp;
 
   n = 0;
-  if (word_in_line[0])
-    printf("%s : ", word_in_line[0]);
   enc_b = 0;
   while (word_in_line[n] != NULL)
   {
@@ -473,12 +471,8 @@ int   ft_instruction(int i, char **word_in_line, t_mem *mem)
     n++;
   }
   enc_b = enc_b << (6 - ((n - 1) * 2));
-  if (mem->enc_b_p)
-  {
-    *(mem->enc_b_p) = enc_b;
-    printf("%x", enc_b);
-  }
-  printf("\n");
+  if (mem->enc_b_i > -1)
+    mem->tmp[mem->enc_b_i + 1] = enc_b;
   if (op_tab[i - 1].param_nb - (n - 1) != 0)
   {
     printf("Mauvais nombre d'argument dans l'instruction\n");
