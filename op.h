@@ -100,11 +100,15 @@ typedef struct        s_mem
     char      *file;
     char      **data;
     char      *tmp;
-    char      *enc_b_p;
+    unsigned char      *enc_b_p;
     int       i;
     char      **labels;
     int       n_label;
     int       *i_label;
+    int       *where_used_label;
+    char      **used_label;
+    int       *size_used_label;
+
 }                    t_mem;
 
 #endif
