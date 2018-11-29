@@ -104,7 +104,7 @@ typedef struct        s_mem
     int       i;
     char      **labels;
     int       n_label;
-    // int       *i_label;
+    int       *i_label;
 }                    t_mem;
 
 #endif

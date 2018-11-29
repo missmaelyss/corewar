@@ -487,6 +487,33 @@ void ft_add_label(t_mem *mem,  char *str)
   mem->n_label++;
 }
 
+void ft_label_place(t_mem *mem)
+{
+  int n;
+  int *tmp;
+
+  n = 0;
+  tmp = (int *)malloc(sizeof(int) * (mem->n_label));
+  while (n < mem->n_label - 1)
+    {
+      tmp[n] = mem->i_label[n];
+      n++;
+    }
+  free(mem->i_label);
+  tmp[n] = mem->i + 1;
+  //mem->i_label = (int *)realloc(mem->i_label, mem->n_label + 1);
+  mem->i_label = tmp;
+  // mem->labels[mem->n_label + 1] = NULL;
+  //mem->i_label[mem->n_label] = mem->i;
+  n = 0;
+  while (n < mem->n_label)
+  {
+    printf("mem->n %d | mem->i_label[n] %d\n", n, mem->i_label[n]);
+    n++;
+  }
+  n = 0;
+}
+
 int   ft_str_is_label(char *str)
 {
   if (str[ft_strlen(str) - 1] == ':')
@@ -512,6 +539,7 @@ int main(int ac, char const *av[])
       if (ft_str_is_label(tmp[0]))
       {
         ft_add_label(&mem, tmp[0]);
+        ft_label_place(&mem);
         //printf("1 %s\n", mem.labels[mem.n_label - 1]);
       }
       if (ft_strcmp(".comment", tmp[0]) == 0)
