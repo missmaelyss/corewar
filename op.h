@@ -112,5 +112,6 @@ typedef struct        s_mem
 }                    t_mem;
 
 char			**ft_strsplit_2(char const *s, char *c);
+char			**ft_strsplit_3(char const *s, char *c);
 
 #endif

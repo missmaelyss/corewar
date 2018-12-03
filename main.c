@@ -83,7 +83,7 @@ int fill_mem(t_mem *mem, char const *av)
     mem->file = tmp;
     ft_bzero(buffer, 1000);
   }
-  mem->data = ft_strsplit(mem->file, '\n');
+  mem->data = ft_strsplit_3(mem->file, "\n");
   mem->i = 0;
   return (fd_r);
 }
@@ -128,27 +128,24 @@ int fill_header_name(t_mem *mem, int n)
 int fill_header_comment(t_mem *mem, int n)
 {
   char  *start;
-  char  *tmp;
   int   i;
 
   i = 0;
-  start = ft_strdup(ft_strchr(mem->data[n], '"'));
+  start = ft_strchr(mem->data[n], '"');
   while (i < COMMENT_LENGTH && start[i] != 0)
   {
+    printf("line : %s\n", start);
     if (start[i] == '"' && i != 0)
       break;
-    mem->header.comment[i - 1] = start[i];
-    if (start[i + 1] == 0)
+    mem->header.comment[i] = start[i];
+    if (start[i + 1] == 0 && i < COMMENT_LENGTH)
     {
       n++;
-      tmp = ft_strjoin(start,"\n");
-      free(start);
-      start = ft_strjoin(tmp, mem->data[n]);
-      free(tmp);
+      start = mem->data[n];
     }
     i++;
   }
-  free(start);
+  printf("%s\n", mem->header.comment);
   return (1);
 }
 
@@ -335,7 +332,7 @@ int   ft_fill_mem(int n, int i, char *word, t_mem *mem)
   {
     if ((op_tab[i - 1].possible_param[n - 1] & T_DIR) != T_DIR)
     {
-      printf("Error : Bad possible_param\n");
+      printf("Error : Bad possible_param : |%s|\n", word);
       return (0);
     }
     size = (op_tab[i - 1].direct_size == 1) ? IND_SIZE : DIR_SIZE;
@@ -362,7 +359,7 @@ int   ft_fill_mem(int n, int i, char *word, t_mem *mem)
   {
     if ((op_tab[i - 1].possible_param[n - 1] & T_REG) != T_REG)
     {
-      printf("Error : Bad possible_param\n");
+      printf("Error : Bad possible_param : |%s|\n", word);
       return (0);
     }
     size = 1;
@@ -376,7 +373,7 @@ int   ft_fill_mem(int n, int i, char *word, t_mem *mem)
   {
     if ((op_tab[i - 1].possible_param[n - 1] & T_IND) != T_IND)
     {
-      printf("Error : Bad possible_param\n");
+      printf("Error : Bad possible_param : |%s|\n", word);
       return (0);
     }
     //printf("%s\n", word);
@@ -467,6 +464,11 @@ int   ft_instruction(int i, char **word_in_line, t_mem *mem)
     {
       tmp[0] = '\0';
       word_in_line[n + 1] = NULL;
+      if (word_in_line[n][0] == '\0')
+      {
+        word_in_line[n] = NULL;
+        break;
+      }
     }
     enc_b += ft_mem_instr(n, i, word_in_line[n], mem);
     enc_b = enc_b << 2;
@@ -668,7 +670,6 @@ int main(int ac, char const *av[])
       }
       if ((i = ft_str_in_op_tab(tmp[0])) != 0)
       {
-        // printf("%s\n", tmp[0]);
         ft_instruction(i, tmp, &mem);
         // if (mem.n_label)
           // printf("4 %s\n", mem.labels[0]);
