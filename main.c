@@ -24,7 +24,7 @@ int create_new_cor(char const *av)
   ft_strcpy(name_cor, av);
   name_cor[ft_strlen(av) - 1] = 'c';
   name_cor[ft_strlen(av)] = 'o';
-  name_cor[ft_strlen(av) + 1] = 'r';
+  name_cor[ft_strlen(av) + 1] = 't';
   name_cor[ft_strlen(av) + 2] = '\0';
   fd_cor = open(name_cor, O_CREAT | O_RDWR, S_IRUSR | S_IWUSR);
   return (fd_cor);
@@ -131,10 +131,12 @@ int fill_header_comment(t_mem *mem, int n)
   char  *tmp;
   int   i;
 
-  i = 1;
+  i = 0;
   start = ft_strdup(ft_strchr(mem->data[n], '"'));
-  while (start[i] != '"' && i - 1 < COMMENT_LENGTH + 1 && start[i] != 0)
+  while (i < COMMENT_LENGTH && start[i] != 0)
   {
+    if (start[i] == '"' && i != 0)
+      break;
     mem->header.comment[i - 1] = start[i];
     if (start[i + 1] == 0)
     {
@@ -181,10 +183,11 @@ int ft_str_in_op_tab(char *str)
 
   n = 0;
   i = 0;
-  while (str[i] == '\t')
+  while (str[i] == '\t' || str[i] == ' ')
     i++;
   while (op_tab[n].name != NULL)
   {
+    // printf("|%s|\n", &str[i]);
     if (ft_strcmp(op_tab[n].name, &str[i]) == 0)
     {
       return (n + 1);
@@ -327,6 +330,7 @@ int   ft_fill_mem(int n, int i, char *word, t_mem *mem)
   int size;
   int ins;
 
+  // printf("word : %s  word[0] : %c\n", word, word[0]);
   if (word[0] == DIRECT_CHAR)
   {
     if ((op_tab[i - 1].possible_param[n - 1] & T_DIR) != T_DIR)
@@ -344,16 +348,15 @@ int   ft_fill_mem(int n, int i, char *word, t_mem *mem)
     {
       ft_stock_label(word, mem, size);
       ins = 0;
-      // printf("ON est dans le cas K : %s\n", word);
     }
-
-   // printf("size = %d DIR_SIZE = %d\n%s %d\n", size, DIR_SIZE, &word[1], ft_atoi(&word[1]));
     if (size == DIR_SIZE)
       *(int *)(mem->tmp + mem->i) = reverse_endian_int(ins);
     else
       *(short *)(mem->tmp + mem->i) = reverse_endian_short((short)ins);
     (mem->i) += size;
-    return ((op_tab[i - 1].direct_size == 1) ? (IND_CODE) : (DIR_CODE));
+    // printf("word : %s  word[0] : %c\n", word, word[0]);
+    // printf("op_tab[i - 1].direct_size =%d, size = %d\n",op_tab[i - 1].direct_size, size);
+    return (DIR_CODE);
   }
   else if (word[0] == REGISTER_CHAR)
   {
@@ -465,12 +468,12 @@ int   ft_instruction(int i, char **word_in_line, t_mem *mem)
       tmp[0] = '\0';
       word_in_line[n + 1] = NULL;
     }
-    ft_clear_word(&(word_in_line[n]));
     enc_b += ft_mem_instr(n, i, word_in_line[n], mem);
     enc_b = enc_b << 2;
     n++;
   }
   enc_b = enc_b << (6 - ((n - 1) * 2));
+  // printf("encoding_byte = %x\n", enc_b);
   if (mem->enc_b_i > -1)
     mem->tmp[mem->enc_b_i + 1] = enc_b;
   if (op_tab[i - 1].param_nb - (n - 1) != 0)
@@ -646,7 +649,7 @@ int main(int ac, char const *av[])
     while (mem.data[n] != NULL)
     {
       mem.data[n] = add_space(mem.data[n]);
-      tmp = ft_strsplit(mem.data[n], ' ');
+      tmp = ft_strsplit_2(mem.data[n], " \t,");
       if (ft_str_is_label(tmp[0]))
       {
         ft_add_label(&mem, tmp[0]);
@@ -665,6 +668,7 @@ int main(int ac, char const *av[])
       }
       if ((i = ft_str_in_op_tab(tmp[0])) != 0)
       {
+        // printf("%s\n", tmp[0]);
         ft_instruction(i, tmp, &mem);
         // if (mem.n_label)
           // printf("4 %s\n", mem.labels[0]);

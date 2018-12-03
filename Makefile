@@ -3,11 +3,11 @@
 NAME = asm
 CC = gcc
 LDFLAGS=
-CFLAGS = -Wall -Wextra -Werror -g 
+CFLAGS = -Wall -Wextra -Werror -g
 LIBFT = libft/libft.a
 OBJDIR = obj
 OBJ = $(SRC:%.c=$(OBJDIR)/%.o)
-SRC = main.c op.c
+SRC = main.c op.c ft_str_split_2.c
 
 all : $(NAME)
 
