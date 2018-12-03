@@ -201,10 +201,13 @@ int    ft_str_is_digit(char *str)
 {
     int i;
 
-    i = -1;
-    while (str[++i])
-        if (!((str[i] >= '0' && str[i] <= '9') || str[i] == '-' || str[ft_strlen(str) - 1] == '\n'))
+    i = 0;
+    while (str[i])
+    {
+        if (!(ft_isdigit(str[i])) && str[i] != '\n' && str[i] != '-')
             return (0);
+        i++;
+    }
     return (1);
 }
 
@@ -254,6 +257,7 @@ int   ft_label_exist(char *word, t_mem *mem, int where)
   {
     if (ft_strcmp(mem->labels[n], &word[2]) == 0)
     {
+      // printf("%d\n", mem->i_label[n]);
       ret = mem->i_label[n] - where;
       break;
     }
@@ -297,6 +301,7 @@ void  ft_stock_label(char *word, t_mem *mem, int size)
   int size_tab;
   char **tmp;
   int *tmp_where;
+  int *tmp_write;
   int *tmp_size;
   int n;
 
@@ -306,25 +311,31 @@ void  ft_stock_label(char *word, t_mem *mem, int size)
   tmp = (char **)malloc(sizeof(char *) * (size_tab + 2));
   tmp_where = (int *)malloc(sizeof(int) * (size_tab + 1));
   tmp_size = (int *)malloc(sizeof(int) * (size_tab + 1));
+  tmp_write = (int *)malloc(sizeof(int) * (size_tab + 1));
   n = 0;
   while (n < size_tab)
   {
     tmp[n] = ft_strdup(mem->used_label[n]);
     tmp_where[n] = mem->where_used_label[n];
     tmp_size[n] = mem->size_used_label[n];
+    tmp_write[n] = mem->where_write_label[n];
     free(mem->used_label[n]);
     n++;
   }
   free(mem->used_label);
   free(mem->where_used_label);
   free(mem->size_used_label);
+  free(mem->where_write_label);
   tmp[n] = ft_strdup(word);
   tmp[n + 1] = NULL;
-  tmp_where[n] = mem->i;
+  // printf("meme->i %d\n", mem->i);
+  tmp_write[n] = mem->i;
+  tmp_where[n] = mem->where;
   tmp_size[n] = size;
   mem->used_label = tmp;;
   mem->where_used_label = tmp_where;
   mem->size_used_label = tmp_size;
+  mem->where_write_label = tmp_write;
 }
 
 int   ft_fill_mem(int n, int i, char *word, t_mem *mem)
@@ -344,14 +355,12 @@ int   ft_fill_mem(int n, int i, char *word, t_mem *mem)
     if (!(mem->tmp = (char *)realloc(mem->tmp, mem->i + size)))
       return (0);
     mem->tmp[mem->i] = 0;
-    //printf("%s is digit : %d\n", &word[1], ft_str_is_digit(&word[1]));
     if (ft_str_is_digit(&word[1]))
       ins = ft_atoi(&word[1]);
     else
     {
       if (word[ft_strlen(word) - 1] == '\n')
         word[ft_strlen(word) - 1] = '\0';
-      printf("On stock : |%s|", word);
       ft_stock_label(word, mem, size);
       ins = 0;
     }
@@ -408,9 +417,11 @@ int ft_mem_instr(int n, int i, char *word, t_mem *mem)
 
   if (ft_strcmp(op_tab[i - 1].name, word) == 0)
   {
+    mem->where = mem->i + 1;
     size = 1 + op_tab[i - 1].encoding_byte;
     if (!(mem->tmp = (char *)realloc(mem->tmp, mem->i + size)))
       return (0);
+    // printf("%s : %x\n", word , op_tab[i - 1].opcode);
     mem->tmp[mem->i] = op_tab[i - 1].opcode;
     if (op_tab[i - 1].encoding_byte)
     {
@@ -479,7 +490,7 @@ int   ft_instruction(int i, char **word_in_line, t_mem *mem)
       word_in_line[n] = NULL;
       break;
     }
-    printf("%d |%s|\n", n, word_in_line[n]);
+    // printf("%d |%s|\n", n, word_in_line[n]);
     enc_b += ft_mem_instr(n, i, word_in_line[n], mem);
     enc_b = enc_b << 2;
     n++;
@@ -487,7 +498,10 @@ int   ft_instruction(int i, char **word_in_line, t_mem *mem)
   enc_b = enc_b << (6 - ((n - 1) * 2));
   // printf("encoding_byte = %x\n", enc_b);
   if (mem->enc_b_i > -1)
+  {
+    // printf("%x\n", enc_b);
     mem->tmp[mem->enc_b_i + 1] = enc_b;
+  }
   if (op_tab[i - 1].param_nb - (n - 1) != 0)
   {
     printf("Mauvais nombre d'argument dans l'instruction\n");
@@ -628,13 +642,15 @@ void fill_label_in_mem(t_mem *mem)
   n = 0;
   while (mem->used_label[n])
   {
-    //printf("%d |%s|\n", n, mem->used_label[n]);
+    // printf("%d |%s|\n", n, mem->used_label[n]);
     ins = ft_label_exist(mem->used_label[n], mem, mem->where_used_label[n]);
-    //printf("%s %d %d %d\n", mem->used_label[n], mem->where_used_label[n], mem->size_used_label[n], ins);
+    // printf("%s %d %d %d %d\n", mem->used_label[n], mem->where_write_label[n], mem->where_used_label[n], mem->size_used_label[n], ins);
+    // printf("%s %d %x %x %x\n", mem->used_label[n], mem->where_write_label[n], mem->where_used_label[n], mem->size_used_label[n], ins);
+    // printf("%x %x\n", reverse_endian_int(ins), reverse_endian_short((short)ins));
     if (mem->size_used_label[n] == DIR_SIZE)
-      *(int *)(mem->tmp + mem->where_used_label[n]) = reverse_endian_int(ins);
+      *(int *)(mem->tmp + mem->where_write_label[n]) = reverse_endian_int(ins);
     else
-      *(short *)(mem->tmp + mem->where_used_label[n]) = reverse_endian_short((short)ins);
+      *(short *)(mem->tmp + mem->where_write_label[n]) = reverse_endian_short((short)ins);
     //printf("avant : %04X, apres : %04X\n", ins, reverse_endian_int(ins));
     n++;
   }

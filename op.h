@@ -102,10 +102,12 @@ typedef struct        s_mem
     char      *tmp;
     int       enc_b_i;
     int       i;
+    int       where;
     char      **labels;
     int       n_label;
     int       *i_label;
     int       *where_used_label;
+    int       *where_write_label;
     char      **used_label;
     int       *size_used_label;
 
