@@ -24,7 +24,7 @@ int create_new_cor(char const *av)
   ft_strcpy(name_cor, av);
   name_cor[ft_strlen(av) - 1] = 'c';
   name_cor[ft_strlen(av)] = 'o';
-  name_cor[ft_strlen(av) + 1] = 't';
+  name_cor[ft_strlen(av) + 1] = 'r';
   name_cor[ft_strlen(av) + 2] = '\0';
   fd_cor = open(name_cor, O_CREAT | O_RDWR, S_IRUSR | S_IWUSR);
   return (fd_cor);
@@ -97,25 +97,26 @@ int fill_mem(t_mem *mem, char const *av)
 int fill_header_name(t_mem *mem, int n)
 {
   char  *start;
-  char  *tmp;
   int   i;
+  int   u;
 
-  i = 1;
-  start = ft_strdup(ft_strchr(mem->data[n], '"'));
-  while (start[i] != '"' && i - 1 < PROG_NAME_LENGTH + 1)
+  i = 0;
+  u = 1;
+  start = ft_strchr(mem->data[n], '"');
+  while (i < COMMENT_LENGTH && start[u] != 0)
   {
-    mem->header.prog_name[i - 1] = start[i];
-    if (start[i + 1] == 0)
+    if (start[u] == '"' && u != 0)
+      break;
+    mem->header.prog_name[i] = start[u];
+    if (start[u + 1] == 0 && i < COMMENT_LENGTH)
     {
       n++;
-      tmp = ft_strjoin(start,"\n");
-      free(start);
-      start = ft_strjoin(tmp, mem->data[n]);
-      free(tmp);
+      u = -1;
+      start = mem->data[n];
     }
     i++;
+    u++;
   }
-  free(start);
   return (1);
 }
 
@@ -129,23 +130,25 @@ int fill_header_comment(t_mem *mem, int n)
 {
   char  *start;
   int   i;
+  int   u;
 
   i = 0;
+  u = 1;
   start = ft_strchr(mem->data[n], '"');
-  while (i < COMMENT_LENGTH && start[i] != 0)
+  while (i < COMMENT_LENGTH && start[u] != 0)
   {
-    printf("line : %s\n", start);
-    if (start[i] == '"' && i != 0)
+    if (start[u] == '"' && u != 0)
       break;
-    mem->header.comment[i] = start[i];
-    if (start[i + 1] == 0 && i < COMMENT_LENGTH)
+    mem->header.comment[i] = start[u];
+    if (start[u + 1] == 0 && i < COMMENT_LENGTH)
     {
       n++;
+      u = -1;
       start = mem->data[n];
     }
     i++;
+    u++;
   }
-  printf("%s\n", mem->header.comment);
   return (1);
 }
 
@@ -200,7 +203,7 @@ int    ft_str_is_digit(char *str)
 
     i = -1;
     while (str[++i])
-        if (!((str[i] >= '0' && str[i] <= '9') || str[i] == '-'))
+        if (!((str[i] >= '0' && str[i] <= '9') || str[i] == '-' || str[ft_strlen(str) - 1] == '\n'))
             return (0);
     return (1);
 }
@@ -241,10 +244,12 @@ int   ft_label_exist(char *word, t_mem *mem, int where)
   n = 0;
   if (word[0] != '%' || word[1] != ':')
   {
-    printf("Error : label mal ecrit\n");
+    printf("Error : label mal ecrit : |%s|\n", word);
     return (0);
   }
   ret = 0;
+  if (word[ft_strlen(word) - 1] == '\n')
+    word[ft_strlen(word) - 1] = '\0';
   while (n < mem->n_label)
   {
     if (ft_strcmp(mem->labels[n], &word[2]) == 0)
@@ -339,10 +344,14 @@ int   ft_fill_mem(int n, int i, char *word, t_mem *mem)
     if (!(mem->tmp = (char *)realloc(mem->tmp, mem->i + size)))
       return (0);
     mem->tmp[mem->i] = 0;
+    //printf("%s is digit : %d\n", &word[1], ft_str_is_digit(&word[1]));
     if (ft_str_is_digit(&word[1]))
       ins = ft_atoi(&word[1]);
     else
     {
+      if (word[ft_strlen(word) - 1] == '\n')
+        word[ft_strlen(word) - 1] = '\0';
+      printf("On stock : |%s|", word);
       ft_stock_label(word, mem, size);
       ins = 0;
     }
@@ -464,12 +473,13 @@ int   ft_instruction(int i, char **word_in_line, t_mem *mem)
     {
       tmp[0] = '\0';
       word_in_line[n + 1] = NULL;
-      if (word_in_line[n][0] == '\0')
-      {
-        word_in_line[n] = NULL;
-        break;
-      }
     }
+    if (word_in_line[n][0] == '\0' || word_in_line[n][0] == '\n')
+    {
+      word_in_line[n] = NULL;
+      break;
+    }
+    printf("%d |%s|\n", n, word_in_line[n]);
     enc_b += ft_mem_instr(n, i, word_in_line[n], mem);
     enc_b = enc_b << 2;
     n++;
@@ -599,7 +609,7 @@ void ft_label_place(t_mem *mem)
 
 int   ft_str_is_label(char *str)
 {
-  if (str[ft_strlen(str) - 1] == ':')
+  if ((str[ft_strlen(str) - 1] == ':') || (str[ft_strlen(str) - 2] == ':' && str[ft_strlen(str) - 1] == '\n'))
     return (1);
   return (0);
 }
@@ -618,6 +628,7 @@ void fill_label_in_mem(t_mem *mem)
   n = 0;
   while (mem->used_label[n])
   {
+    //printf("%d |%s|\n", n, mem->used_label[n]);
     ins = ft_label_exist(mem->used_label[n], mem, mem->where_used_label[n]);
     //printf("%s %d %d %d\n", mem->used_label[n], mem->where_used_label[n], mem->size_used_label[n], ins);
     if (mem->size_used_label[n] == DIR_SIZE)
@@ -641,7 +652,6 @@ int main(int ac, char const *av[])
   t_mem mem;
   char  **tmp;
   int   n = 0;
-  int   i;
   int   fd;
 
   ft_bzero(&mem, sizeof(mem));
@@ -654,6 +664,7 @@ int main(int ac, char const *av[])
       tmp = ft_strsplit_2(mem.data[n], " \t,");
       if (ft_str_is_label(tmp[0]))
       {
+        // printf("%s\n", tmp[0]);
         ft_add_label(&mem, tmp[0]);
         ft_label_place(&mem);
         //printf("1 %s\n", mem.labels[mem.n_label - 1]);
@@ -668,9 +679,12 @@ int main(int ac, char const *av[])
         fill_header_name(&mem, n);
         // printf("%s\n", mem.header.prog_name);
       }
-      if ((i = ft_str_in_op_tab(tmp[0])) != 0)
+      if (ft_str_in_op_tab(tmp[0]) != 0 || (tmp[1] && ft_str_in_op_tab(tmp[1]) != 0 && ft_str_is_label(tmp[0])))
       {
-        ft_instruction(i, tmp, &mem);
+        if (ft_str_in_op_tab(tmp[0]) != 0)
+          ft_instruction(ft_str_in_op_tab(tmp[0]), tmp, &mem);
+        else
+          ft_instruction(ft_str_in_op_tab(tmp[1]), &tmp[1], &mem);
         // if (mem.n_label)
           // printf("4 %s\n", mem.labels[0]);
         //printf("On a trouve l'instruction : %s (%d), en tant que 1er mot dans la ligne: %s\n", op_tab[i - 1].name, i, mem.data[n]);
