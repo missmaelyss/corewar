@@ -247,7 +247,7 @@ int   ft_label_exist(char *word, t_mem *mem, int where)
   n = 0;
   if (word[0] != '%' || word[1] != ':')
   {
-    printf("Error : label mal ecrit : |%s|\n", word);
+    ft_exit("Error : label mal ecrit : |%s|\n", -1, mem);
     return (0);
   }
   ret = 0;
@@ -348,13 +348,14 @@ int   ft_fill_mem(int n, int i, char *word, t_mem *mem)
   {
     if ((op_tab[i - 1].possible_param[n - 1] & T_DIR) != T_DIR)
     {
-      printf("Error : Bad possible_param : |%s|\n", word);
+      ft_exit("Error : Bad possible_param : |%s|\n", -1, mem);
       return (0);
     }
     size = (op_tab[i - 1].direct_size == 1) ? IND_SIZE : DIR_SIZE;
     if (!(mem->tmp = (char *)realloc(mem->tmp, mem->i + size)))
       return (0);
     mem->tmp[mem->i] = 0;
+    // printf("word %s\n", word);
     if (ft_str_is_digit(&word[1]))
       ins = ft_atoi(&word[1]);
     else
@@ -377,7 +378,7 @@ int   ft_fill_mem(int n, int i, char *word, t_mem *mem)
   {
     if ((op_tab[i - 1].possible_param[n - 1] & T_REG) != T_REG)
     {
-      printf("Error : Bad possible_param : |%s|\n", word);
+      ft_exit("Error : Bad possible_param : |%s|\n", -1, mem);
       return (0);
     }
     size = 1;
@@ -391,7 +392,7 @@ int   ft_fill_mem(int n, int i, char *word, t_mem *mem)
   {
     if ((op_tab[i - 1].possible_param[n - 1] & T_IND) != T_IND)
     {
-      printf("Error : Bad possible_param : |%s|\n", word);
+      ft_exit("Error : Bad possible_param : |%s|\n", -1, mem);
       return (0);
     }
     //printf("%s\n", word);
@@ -504,49 +505,11 @@ int   ft_instruction(int i, char **word_in_line, t_mem *mem)
   }
   if (op_tab[i - 1].param_nb - (n - 1) != 0)
   {
-    printf("Mauvais nombre d'argument dans l'instruction\n");
+    ft_exit("Mauvais nombre d'argument dans l'instruction\n", -1, mem);
     return (0);
   }
   return (1);
 }
-
-// char *add_space(char *str)
-// {
-//   int n;
-//   int j;
-//   int k;
-//   int i;
-//   int size;
-//
-//   i = 0;
-//   n = 0;
-//   while (str && str[i] && (str[i] == ' ' || str[i] == '\t'))
-//     i++;
-//   while (op_tab[n].name != NULL)
-//   {
-//     j = ft_strlen(op_tab[n].name);
-//     k = 0;
-//     while (str[k + i] == op_tab[n].name[k] && k != j)
-//       k++;
-//     if (str[i + k + 1] != 'i')
-//     {
-//       if ((int)ft_strlen(str) != j)
-//       {
-//         size = ft_strlen(str) + 2;
-//         str = (char *)realloc(str, size);
-//         while (size > i + k + 1)
-//         {
-//           str[size] = str[size - 1];
-//           size--;
-//         }
-//         str[size] = ' ';
-//         return (str);
-//       }
-//     }
-//     n++;
-//   }
-//   return (str);
-// }
 
 int   find_max_len(char *str)
 {

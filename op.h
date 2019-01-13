@@ -115,5 +115,7 @@ typedef struct        s_mem
 
 char			**ft_strsplit_2(char const *s, char *c);
 char			**ft_strsplit_3(char const *s, char *c);
+void	        ft_exit(char *exit_msg, int status, t_mem *mem);
+void	        ft_freetab(char **tab);
 
 #endif

@@ -7,7 +7,7 @@ CFLAGS = -Wall -Wextra -Werror -g
 LIBFT = libft/libft.a
 OBJDIR = obj
 OBJ = $(SRC:%.c=$(OBJDIR)/%.o)
-SRC = main.c op.c ft_str_split_2.c ft_str_split_3.c
+SRC = main.c op.c ft_str_split_2.c ft_str_split_3.c error.c
 
 all : $(NAME)
 
