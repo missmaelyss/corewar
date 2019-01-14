@@ -117,7 +117,7 @@ int fill_header_name(t_mem *mem, int n)
     i++;
     u++;
   }
-  return (1);
+  return (n);
 }
 
 /*
@@ -149,7 +149,7 @@ int fill_header_comment(t_mem *mem, int n)
     i++;
     u++;
   }
-  return (1);
+  return (n);
 }
 
 /*
@@ -245,9 +245,11 @@ int   ft_label_exist(char *word, t_mem *mem, int where)
   int ret;
 
   n = 0;
-  if (word[0] != '%' || word[1] != ':')
+  if ((word[0] != '%' || word[1] != ':') && (word[0] != ':'))
   {
-    ft_exit("Error : label mal ecrit : |%s|\n", -1, mem);
+    // printf("%s\n", word);
+    ft_putstr(word);
+    ft_exit("\nError : label mal ecrit : |%s|\n", -1, mem);
     return (0);
   }
   ret = 0;
@@ -255,9 +257,10 @@ int   ft_label_exist(char *word, t_mem *mem, int where)
     word[ft_strlen(word) - 1] = '\0';
   while (n < mem->n_label)
   {
-    if (ft_strcmp(mem->labels[n], &word[2]) == 0)
+    (mem->labels[n][ft_strlen(mem->labels[n]) - 1] == ':') ? mem->labels[n][ft_strlen(mem->labels[n]) - 1] = '\0' : 0;
+    if (ft_strcmp(mem->labels[n], &word[2]) == 0 || ft_strcmp(mem->labels[n], &word[1]) == 0)
     {
-      // printf("%d\n", mem->i_label[n]);
+      // printf("ICI%d\n", mem->i_label[n]);
       ret = mem->i_label[n] - where;
       break;
     }
@@ -296,22 +299,25 @@ void ft_add_label(t_mem *mem,  char *str)
 **    int       *size_used_label;
 */
 
-void  ft_stock_label(char *word, t_mem *mem, int size)
+void  ft_stock_label(char *word, t_mem *mem, int size, int add)
 {
   int size_tab;
   char **tmp;
   int *tmp_where;
   int *tmp_write;
   int *tmp_size;
+  int *tmp_add;
   int n;
 
   size_tab = 0;
   while (mem->used_label && mem->used_label[size_tab] != NULL)
     size_tab++;
+  // printf("word = %s\n", word);
   tmp = (char **)malloc(sizeof(char *) * (size_tab + 2));
   tmp_where = (int *)malloc(sizeof(int) * (size_tab + 1));
   tmp_size = (int *)malloc(sizeof(int) * (size_tab + 1));
   tmp_write = (int *)malloc(sizeof(int) * (size_tab + 1));
+  tmp_add = (int *)malloc(sizeof(int) * (size_tab + 1));
   n = 0;
   while (n < size_tab)
   {
@@ -319,6 +325,7 @@ void  ft_stock_label(char *word, t_mem *mem, int size)
     tmp_where[n] = mem->where_used_label[n];
     tmp_size[n] = mem->size_used_label[n];
     tmp_write[n] = mem->where_write_label[n];
+    tmp_add[n] = mem->to_add[n];
     free(mem->used_label[n]);
     n++;
   }
@@ -332,10 +339,12 @@ void  ft_stock_label(char *word, t_mem *mem, int size)
   tmp_write[n] = mem->i;
   tmp_where[n] = mem->where;
   tmp_size[n] = size;
-  mem->used_label = tmp;;
+  tmp_add[n] = add;
+  mem->used_label = tmp;
   mem->where_used_label = tmp_where;
   mem->size_used_label = tmp_size;
   mem->where_write_label = tmp_write;
+  mem->to_add = tmp_add;
 }
 
 int   ft_fill_mem(int n, int i, char *word, t_mem *mem)
@@ -362,7 +371,7 @@ int   ft_fill_mem(int n, int i, char *word, t_mem *mem)
     {
       if (word[ft_strlen(word) - 1] == '\n')
         word[ft_strlen(word) - 1] = '\0';
-      ft_stock_label(word, mem, size);
+      ft_stock_label(word, mem, size, 0);
       ins = 0;
     }
     if (size == DIR_SIZE)
@@ -390,14 +399,30 @@ int   ft_fill_mem(int n, int i, char *word, t_mem *mem)
   }
   else
   {
+    // printf("word : %s  word[0] : %c\n", word, word[0]);
     if ((op_tab[i - 1].possible_param[n - 1] & T_IND) != T_IND)
     {
       ft_exit("Error : Bad possible_param : |%s|\n", -1, mem);
       return (0);
     }
+    size = IND_SIZE;
     //printf("%s\n", word);
     //printf("%d %d\n", (short)ft_atoi(&word[0]), reverse_endian_short((short)ft_atoi(&word[0])));
-    size = IND_SIZE;
+    if (word[0] == ':')
+    {
+      // printf("word : %s  word[0] : %c\n", word, word[0]);
+      if (word[ft_strlen(word) - 1] == '\n')
+        word[ft_strlen(word) - 1] = '\0';
+      if (ft_strchr(word, '+') != NULL || ft_strchr(word, '-') != NULL)
+        ft_exit("Error +|-", -1, mem);
+      // if (ft_strchr(word, '+') != NULL)
+      //   ft_stock_label(word, mem, size, ft_atoi(ft_strchr(word, '+')));
+      // if (ft_strchr(word, '-') != NULL)
+      //   ft_stock_label(word, mem, size, ft_atoi(ft_strchr(word, '-')));
+      else
+        ft_stock_label(word, mem, size, 0);
+      ins = 0;
+    }
     if (!(mem->tmp = (char *)realloc(mem->tmp, mem->i + size)))
       return (0);
     *(short *)(mem->tmp + mem->i) = reverse_endian_short((short)ft_atoi(&word[0]));
@@ -530,7 +555,7 @@ int   find_max_len(char *str)
   return (max_len);
 }
 
-char *add_space(char *str)
+char *add_space_direct_char(char *str)
 {
   int n;
   int i;
@@ -551,6 +576,31 @@ char *add_space(char *str)
       i--;
     }
     str[i] = ' ';
+  }
+  return (str);
+}
+
+char *remove_space_add_char(char *str)
+{
+  int n;
+  int virgule;
+
+  n = 0;
+  virgule = 0;
+  while (str[n] != '\0')
+  {
+    if (str[n] == ',')
+      virgule = 1;
+    if ((str[n] == '+' || str[n] == '-') && n > 0 && str[n - 1] == ' ' && virgule == 1)
+    {
+      while (str[n] != '\0')
+      {
+        str[n - 1] = str[n];
+        n++;
+      }
+      n = -1;
+    }
+    n++;
   }
   return (str);
 }
@@ -603,18 +653,18 @@ void fill_label_in_mem(t_mem *mem)
   int ins;
 
   n = 0;
-  while (mem->used_label[n])
+  while (mem->used_label && mem->used_label[n])
   {
     // printf("%d |%s|\n", n, mem->used_label[n]);
-    ins = ft_label_exist(mem->used_label[n], mem, mem->where_used_label[n]);
-    // printf("%s %d %d %d %d\n", mem->used_label[n], mem->where_write_label[n], mem->where_used_label[n], mem->size_used_label[n], ins);
+    ins = ft_label_exist(mem->used_label[n], mem, mem->where_used_label[n] + mem->to_add[n]);
+    // printf("%s %d %d %d %d %d\n", mem->used_label[n], mem->where_write_label[n], mem->where_used_label[n], mem->size_used_label[n], ins, mem->to_add[n]);
     // printf("%s %d %x %x %x\n", mem->used_label[n], mem->where_write_label[n], mem->where_used_label[n], mem->size_used_label[n], ins);
     // printf("%x %x\n", reverse_endian_int(ins), reverse_endian_short((short)ins));
     if (mem->size_used_label[n] == DIR_SIZE)
       *(int *)(mem->tmp + mem->where_write_label[n]) = reverse_endian_int(ins);
     else
       *(short *)(mem->tmp + mem->where_write_label[n]) = reverse_endian_short((short)ins);
-    //printf("avant : %04X, apres : %04X\n", ins, reverse_endian_int(ins));
+    // printf("avant : %04X, apres : %04X\n", ins, reverse_endian_int(ins));
     n++;
   }
 }
@@ -626,40 +676,73 @@ void fill_label_in_mem(t_mem *mem)
 **  char				    comment[COMMENT_LENGTH + 1];
 */
 
+char  *ft_strrpl(char *dest, const char *src, char a, char b)
+{
+  int n;
+
+  n = 0;
+  while (src[n] != 0)
+  {
+    if (src[n] == a)
+      dest[n] = b;
+    else
+      dest[n] = src[n];
+    n++;
+  }
+  dest[n] = 0;
+  return (dest);
+}
+
 int main(int ac, char const *av[])
 {
   t_mem mem;
   char  **tmp;
   int   n = 0;
   int   fd;
+  int   good;
 
+  good = 0;
   ft_bzero(&mem, sizeof(mem));
   if (ac > 1)
   {
     fill_mem(&mem, av[1]);
     while (mem.data[n] != NULL)
     {
-      mem.data[n] = add_space(mem.data[n]);
+      mem.data[n] = ft_strrpl(mem.data[n], mem.data[n], ';', COMMENT_CHAR);
+      mem.data[n] = add_space_direct_char(mem.data[n]);
+      mem.data[n] = remove_space_add_char(mem.data[n]);
       tmp = ft_strsplit_2(mem.data[n], " \t,");
-      if (ft_str_is_label(tmp[0]))
+      // printf("#%d line: %s\ntmp[0] = %s\n", n, mem.data[n], tmp[0]);
+      if (ft_strcmp(".comment", tmp[0]) == 0)
+      {
+        n = fill_header_comment(&mem, n);
+        good++;
+        // printf("%s\n", mem.header.comment);
+      }
+      else if (ft_strcmp(".name", tmp[0]) == 0)
+      {
+        good++;
+        n = fill_header_name(&mem, n);
+        // printf("%s\n", mem.header.prog_name);
+      }
+      else if (ft_str_is_label(tmp[0]))
       {
         // printf("%s\n", tmp[0]);
         ft_add_label(&mem, tmp[0]);
         ft_label_place(&mem);
         //printf("1 %s\n", mem.labels[mem.n_label - 1]);
       }
-      if (ft_strcmp(".comment", tmp[0]) == 0)
+      else if (tmp[0][0] != COMMENT_CHAR && ft_str_in_op_tab(tmp[0]) == 0 && tmp[0][0] != '\0' && tmp[0][0] != ' ' && tmp[0][0] != '\n' && tmp[0][0] != '\t' && ft_strlen(tmp[0]) > 1)
       {
-        fill_header_comment(&mem, n);
-        // printf("%s\n", mem.header.comment);
-      }
-      if (ft_strcmp(".name", tmp[0]) == 0)
-      {
-        fill_header_name(&mem, n);
-        // printf("%s\n", mem.header.prog_name);
+        ft_putnbr(n + 1);
+        ft_putstr(" line : ");
+        ft_putstr(tmp[0]);
+        ft_exit("\nBad line", -1, &mem);
       }
       if (ft_str_in_op_tab(tmp[0]) != 0 || (tmp[1] && ft_str_in_op_tab(tmp[1]) != 0 && ft_str_is_label(tmp[0])))
       {
+        if (good != 2)
+          ft_exit("Missing comment or name", -1, &mem);
         if (ft_str_in_op_tab(tmp[0]) != 0)
           ft_instruction(ft_str_in_op_tab(tmp[0]), tmp, &mem);
         else

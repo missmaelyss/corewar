@@ -35,7 +35,7 @@
 #define IDX_MOD					(MEM_SIZE / 8)
 #define CHAMP_MAX_SIZE			(MEM_SIZE / 6)
 
-#define COMMENT_CHAR			'#'
+#define COMMENT_CHAR            '#'
 #define LABEL_CHAR				':'
 #define DIRECT_CHAR				'%'
 #define REGISTER_CHAR			'r'
@@ -108,6 +108,7 @@ typedef struct        s_mem
     int       *i_label;
     int       *where_used_label;
     int       *where_write_label;
+    int       *to_add;
     char      **used_label;
     int       *size_used_label;
 
