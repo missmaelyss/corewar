@@ -100,7 +100,7 @@ typedef struct		s_tmp_lab
 
 typedef struct		s_mem
 {
-	header_t			header;
+	t_header			header;
 	char				*file;
 	char				**data;
 	char				*tmp;
@@ -127,5 +127,23 @@ int					ft_str_is_label(char *str);
 int					ft_label_exist(char *word, t_mem *mem, int where);
 void				fill_label_in_mem(t_mem *mem);
 void				ft_add_label(t_mem *mem, char *str);
+int					ft_strchrword(char *str, char *word);
+int					ft_del_char_ptr(char **tmp);
+int					ft_str_is_digit(char *str);
+int					reverse_endian_int(int a);
+short				reverse_endian_short(short a);
+void				ft_clear_word(char **word);
+int					find_max_len(char *str);
+char				*add_space_direct_char(char *str);
+char				*remove_space_add_char(char *str);
+char				*ft_strrpl(char *dest, const char *src, char a, char b);
+int					ft_fill_mem(int n, int i, char *word, t_mem *mem);
+int					ft_mem_instr(int n, int i, char *word, t_mem *mem);
+int					ft_instruction(int i, char **word_in_line, t_mem *mem);
+int					fill_mem(t_mem *mem, char const *av);
+int					fill_header_name(t_mem *mem, int n);
+int					fill_header_comment(t_mem *mem, int n);
+int					create_new_cor(char const *av);
+int					ft_str_in_op_tab(char *str);
 
 #endif

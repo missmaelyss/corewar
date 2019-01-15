@@ -25,25 +25,25 @@
 **  Stock the label info in memory in order to fill it later
 */
 
-static t_tmp_lab	ft_init_tmp_label(t_tmp_lab tmp, int size_tab, t_mem *mem)
+static t_tmp_lab	ft_init_tmp_label(int size_tab, t_mem *mem, int *n)
 {
-	int n;
+	t_tmp_lab	tmp;
 
 	tmp.used_label = (char **)malloc(sizeof(char *) * (size_tab + 2));
 	tmp.where_used_label = (int *)malloc(sizeof(int) * (size_tab + 1));
 	tmp.where_write_label = (int *)malloc(sizeof(int) * (size_tab + 1));
 	tmp.size_used_label = (int *)malloc(sizeof(int) * (size_tab + 1));
 	tmp.to_add = (int *)malloc(sizeof(int) * (size_tab + 1));
-	n = 0;
-	while (n < size_tab)
+	*n = 0;
+	while ((*n) < size_tab)
 	{
-		tmp.used_label[n] = ft_strdup(mem->used_label[n]);
-		tmp.where_used_label[n] = mem->where_used_label[n];
-		tmp.where_write_label[n] = mem->where_write_label[n];
-		tmp.size_used_label[n] = mem->size_used_label[n];
-		tmp.to_add[n] = mem->to_add[n];
-		free(mem->used_label[n]);
-		n++;
+		tmp.used_label[*n] = ft_strdup(mem->used_label[*n]);
+		tmp.where_used_label[*n] = mem->where_used_label[*n];
+		tmp.where_write_label[*n] = mem->where_write_label[*n];
+		tmp.size_used_label[*n] = mem->size_used_label[*n];
+		tmp.to_add[*n] = mem->to_add[*n];
+		free(mem->used_label[*n]);
+		(*n)++;
 	}
 	free(mem->used_label);
 	free(mem->where_used_label);
@@ -62,7 +62,7 @@ void				ft_stock_label(char *word, t_mem *mem, int size, int add)
 	size_tab = 0;
 	while (mem->used_label && mem->used_label[size_tab] != NULL)
 		size_tab++;
-	tmp = ft_init_tmp_label(tmp, size_tab);
+	tmp = ft_init_tmp_label(size_tab, mem, &n);
 	tmp.used_label[n] = ft_strdup(word);
 	tmp.used_label[n + 1] = NULL;
 	tmp.where_used_label[n] = mem->where;

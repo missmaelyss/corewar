@@ -1,9 +1,20 @@
-#include "libft/libft.h"
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   ft_str_split_3.c                                   :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: marnaud <marvin@42.fr>                     +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2019/01/15 16:32:26 by marnaud           #+#    #+#             */
+/*   Updated: 2019/01/15 16:35:54 by marnaud          ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "op.h"
 
 static int		len_w(char const *s, char *c, int i)
 {
-	int len_word;
+	int			len_word;
 
 	len_word = 0;
 	while (!(ft_strchr(c, s[i])) && s[i] != '\0')
@@ -18,7 +29,7 @@ static int		len_w(char const *s, char *c, int i)
 
 static int		nb_w(char const *s, char *c)
 {
-	int		nb_words;
+	int			nb_words;
 
 	nb_words = 0;
 	while (*s != '\0')
@@ -42,7 +53,7 @@ static int		nb_w(char const *s, char *c)
 
 static	void	file(char const *s, char *c, int *n_str, char *tab)
 {
-	int		n_word;
+	int			n_word;
 
 	n_word = 0;
 	while (!(ft_strchr(c, s[*n_str])) && s[*n_str] != '\0')
@@ -62,9 +73,9 @@ static	void	file(char const *s, char *c, int *n_str, char *tab)
 
 char			**ft_strsplit_3(char const *s, char *c)
 {
-	char	**tab;
-	int		n_tab;
-	int		n_str;
+	char		**tab;
+	int			n_tab;
+	int			n_str;
 
 	if (!s)
 		return (0);
@@ -74,8 +85,6 @@ char			**ft_strsplit_3(char const *s, char *c)
 	n_str = 0;
 	while (n_tab < nb_w(s, c))
 	{
-		// while (ft_strchr(c, s[n_str]))
-		// 	n_str++;
 		if (!(tab[n_tab] = (char *)malloc(sizeof(char) *
 						(len_w(s, c, n_str) + 1))))
 			return (0);
