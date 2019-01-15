@@ -29,7 +29,7 @@ static void		handle_line(int *n, char **tmp, int *good, t_mem *mem)
 	else if (ft_strcmp(".name", tmp[0]) == 0)
 	{
 		(*good)++;
-		*n = fill_header_name(mem, n);
+		*n = fill_header_name(mem, *n);
 	}
 	else if (ft_str_is_label(tmp[0]))
 	{
@@ -47,7 +47,7 @@ static void		handle_line(int *n, char **tmp, int *good, t_mem *mem)
 	}
 }
 
-static void		instruction_in_line(char **tmp, int good, t_mem *mem)
+static void		instruction_in_line(int n, char **tmp, int good, t_mem *mem)
 {
 	if (good != 2)
 		ft_exit("Missing comment or name", -1, mem);
@@ -73,17 +73,17 @@ static void		instruction_in_line(char **tmp, int good, t_mem *mem)
 	}
 }
 
-static void		file_end(t_mem *mem)
+static void		file_end(t_mem *mem, char const *av[])
 {
 	int fd;
 
-	fill_label_in_mem(&mem);
+	fill_label_in_mem(mem);
 	fd = create_new_cor(av[1]);
 	if (fd == -1)
 		ft_exit("Impossible to create .cor", -1, mem);
 	mem->header.magic = reverse_endian_int(COREWAR_EXEC_MAGIC);
 	mem->header.prog_size = reverse_endian_int(mem->i);
-	write(fd, &mem.header, sizeof(mem->header));
+	write(fd, &(mem->header), sizeof(mem->header));
 	write(fd, mem->tmp, mem->i);
 }
 
@@ -111,14 +111,14 @@ int				main(int ac, char const *av[])
 		{
 			init_mem_data(n, &mem);
 			tmp = ft_strsplit_2(mem.data[n], " \t,");
-			handle_line(&n, tmp, &good);
+			handle_line(&n, tmp, &good, &mem);
 			if ((tmp[1] && ft_str_in_op_tab(tmp[1]) != 0 &&
 			ft_str_is_label(tmp[0])) || ft_str_in_op_tab(tmp[0]) != 0)
-				instruction_in_line(tmp, good, &mem);
+				instruction_in_line(n, tmp, good, &mem);
 			ft_del_char_ptr(tmp);
 			n++;
 		}
-		file_end(&mem);
+		file_end(&mem, av);
 	}
 	return (0);
 }
