@@ -17,6 +17,11 @@
 
 #ifndef OP_H
 
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#include "libft/libft.h"
+
 # define OP_H
 
 #define IND_SIZE				2
