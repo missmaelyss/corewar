@@ -19,6 +19,8 @@
 
 # define OP_H
 
+#include <stdio.h>
+
 # include <sys/types.h>
 # include <sys/stat.h>
 # include <fcntl.h>
@@ -101,6 +103,8 @@ typedef struct		s_tmp_lab
 typedef struct		s_mem
 {
 	t_header			header;
+	int					nb_c;
+	int					p_c;
 	char				*file;
 	char				**data;
 	char				*tmp;

@@ -115,11 +115,14 @@ int				main(int ac, char const *av[])
 		{
 			init_mem_data(n, &mem);
 			tmp = ft_strsplit_2(mem.data[n], " \t,");
-			handle_line(&n, tmp, &good, &mem);
-			if ((tmp[1] && ft_str_in_op_tab(tmp[1]) != 0 &&
-			ft_str_is_label(tmp[0])) || ft_str_in_op_tab(tmp[0]) != 0)
-				instruction_in_line(n, tmp, &good, &mem);
-			ft_del_char_ptr(tmp);
+			if (tmp[0])
+			{
+				handle_line(&n, tmp, &good, &mem);
+				if ((tmp[1] && ft_str_in_op_tab(tmp[1]) != 0 &&
+				ft_str_is_label(tmp[0])) || ft_str_in_op_tab(tmp[0]) != 0)
+					instruction_in_line(n, tmp, &good, &mem);
+				ft_del_char_ptr(tmp);
+			}
 			n++;
 		}
 		file_end(&mem, av, good);

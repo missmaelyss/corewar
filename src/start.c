@@ -6,7 +6,7 @@
 /*   By: marnaud <marvin@42.fr>                     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/01/15 16:32:26 by marnaud           #+#    #+#             */
-/*   Updated: 2019/01/17 17:42:50 by marnaud          ###   ########.fr       */
+/*   Updated: 2019/01/17 20:06:18 by marnaud          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,14 +24,16 @@ int			fill_mem(t_mem *mem, char const *av)
 	int		fd_r;
 	char	buffer[1000];
 	char	*tmp;
+	int		cpt;
 
 	mem->file = NULL;
 	fd_r = open(av, O_RDONLY | O_NOFOLLOW);
 	if (ft_strlen(av) < 3 || (av[ft_strlen(av) - 2] != '.' ||
 	av[ft_strlen(av) - 1] != 's') || fd_r == -1)
 		ft_exit("Bad file\nusage: ./asm [file].s", -1, mem);
-	while (read(fd_r, buffer, 1000 - 1))
+	while ((cpt = read(fd_r, buffer, 1000 - 1)))
 	{
+		mem->nb_c += cpt;
 		tmp = ft_strjoin(mem->file, buffer);
 		free(mem->file);
 		mem->file = tmp;
@@ -40,6 +42,14 @@ int			fill_mem(t_mem *mem, char const *av)
 	mem->data = ft_strsplit_3(mem->file, "\n");
 	mem->i = 0;
 	return (fd_r);
+}
+
+static char	*new_line(t_mem *mem, int *n, int *u)
+{
+	(*n)++;
+	*u = -1;
+	mem->p_c += 1;
+	return (mem->data[*n]);
 }
 
 /*
@@ -57,19 +67,21 @@ int			fill_header_name(t_mem *mem, int n)
 	i = 0;
 	u = 1;
 	start = ft_strchr(mem->data[n], '"');
-	while (i < COMMENT_LENGTH && start[u] != 0)
+	if (!start)
+		ft_exit("Error: Bad name", -1, mem);
+	mem->p_c += ft_strlen(mem->data[n]) - ft_strlen(start);
+	while (i < COMMENT_LENGTH && mem->p_c < mem->nb_c)
 	{
-		if (start[u] == '"' && u != 0)
+		if (start[u] == '"' && i > 0)
 			break ;
 		mem->header.prog_name[i] = start[u];
 		if (start[u + 1] == 0 && i < COMMENT_LENGTH)
-		{
-			n++;
-			u = -1;
-			start = mem->data[n];
-		}
+			start = new_line(mem, &n, &u);
+		mem->p_c += 1;
 		i++;
 		u++;
+		if (mem->p_c >= mem->nb_c)
+			ft_exit("Error: Bad name", -1, mem);
 	}
 	return (n);
 }
@@ -88,20 +100,23 @@ int			fill_header_comment(t_mem *mem, int n)
 
 	i = 0;
 	u = 1;
+	mem->p_c += 1;
 	start = ft_strchr(mem->data[n], '"');
-	while (i < COMMENT_LENGTH && start[u] != 0)
+	if (!start)
+		ft_exit("Error: Bad comment", -1, mem);
+	mem->p_c += ft_strlen(mem->data[n]) - ft_strlen(start);
+	while (i < COMMENT_LENGTH && mem->p_c < mem->nb_c)
 	{
-		if (start[u] == '"' && u != 0)
+		if (start[u] == '"' && i > 0)
 			break ;
 		mem->header.comment[i] = start[u];
 		if (start[u + 1] == 0 && i < COMMENT_LENGTH)
-		{
-			n++;
-			u = -1;
-			start = mem->data[n];
-		}
+			start = new_line(mem, &n, &u);
+		mem->p_c += 1;
 		i++;
 		u++;
+		if (mem->p_c >= mem->nb_c)
+			ft_exit("Error: Bad comment", -1, mem);
 	}
 	return (n);
 }
