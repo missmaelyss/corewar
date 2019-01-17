@@ -6,7 +6,7 @@
 /*   By: marnaud <marvin@42.fr>                     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/01/15 16:32:26 by marnaud           #+#    #+#             */
-/*   Updated: 2019/01/15 20:28:32 by marnaud          ###   ########.fr       */
+/*   Updated: 2019/01/17 17:42:12 by marnaud          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -47,9 +47,9 @@ static void		handle_line(int *n, char **tmp, int *good, t_mem *mem)
 	}
 }
 
-static void		instruction_in_line(int n, char **tmp, int good, t_mem *mem)
+static void		instruction_in_line(int n, char **tmp, int *good, t_mem *mem)
 {
-	if (good != 2)
+	if (*good < 2)
 		ft_exit("Missing comment or name", -1, mem);
 	if (ft_str_in_op_tab(tmp[0]) != 0)
 	{
@@ -60,6 +60,7 @@ static void		instruction_in_line(int n, char **tmp, int good, t_mem *mem)
 			ft_putstr(":1");
 			ft_exit("]", -1, mem);
 		}
+		(*good)++;
 	}
 	else
 	{
@@ -70,13 +71,16 @@ static void		instruction_in_line(int n, char **tmp, int good, t_mem *mem)
 			ft_putstr(":2");
 			ft_exit("]", -1, mem);
 		}
+		(*good)++;
 	}
 }
 
-static void		file_end(t_mem *mem, char const *av[])
+static void		file_end(t_mem *mem, char const *av[], int good)
 {
 	int fd;
 
+	if (good < 3)
+		ft_exit("Syntax error no instruction", -1, mem);
 	fill_label_in_mem(mem);
 	fd = create_new_cor(av[1]);
 	if (fd == -1)
@@ -107,18 +111,18 @@ int				main(int ac, char const *av[])
 	if (ac > 1)
 	{
 		fill_mem(&mem, av[1]);
-		while (mem.data[n] != NULL)
+		while (mem.data && mem.data[n] != NULL)
 		{
 			init_mem_data(n, &mem);
 			tmp = ft_strsplit_2(mem.data[n], " \t,");
 			handle_line(&n, tmp, &good, &mem);
 			if ((tmp[1] && ft_str_in_op_tab(tmp[1]) != 0 &&
 			ft_str_is_label(tmp[0])) || ft_str_in_op_tab(tmp[0]) != 0)
-				instruction_in_line(n, tmp, good, &mem);
+				instruction_in_line(n, tmp, &good, &mem);
 			ft_del_char_ptr(tmp);
 			n++;
 		}
-		file_end(&mem, av);
+		file_end(&mem, av, good);
 	}
 	return (0);
 }

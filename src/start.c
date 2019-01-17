@@ -6,7 +6,7 @@
 /*   By: marnaud <marvin@42.fr>                     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/01/15 16:32:26 by marnaud           #+#    #+#             */
-/*   Updated: 2019/01/15 16:35:54 by marnaud          ###   ########.fr       */
+/*   Updated: 2019/01/17 17:42:50 by marnaud          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,6 +27,9 @@ int			fill_mem(t_mem *mem, char const *av)
 
 	mem->file = NULL;
 	fd_r = open(av, O_RDONLY);
+	if (ft_strlen(av) < 3 || (av[ft_strlen(av) - 2] != '.' ||
+	av[ft_strlen(av) - 1] != 's') || fd_r == -1)
+		ft_exit("Bad file\nusage: ./asm [file].s", -1, mem);
 	while (read(fd_r, buffer, 1000 - 1))
 	{
 		tmp = ft_strjoin(mem->file, buffer);
@@ -116,7 +119,7 @@ int			create_new_cor(char const *av)
 
 	if (ft_strlen(av) < 3 || (av[ft_strlen(av) - 2] != '.' &&
 	av[ft_strlen(av) - 1] != 's'))
-		return (0);
+		return (-1);
 	name_cor = (char *)malloc((ft_strlen(av) + 3) * sizeof(char));
 	ft_strcpy(name_cor, av);
 	name_cor[ft_strlen(av) - 1] = 'c';
