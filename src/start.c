@@ -26,7 +26,7 @@ int			fill_mem(t_mem *mem, char const *av)
 	char	*tmp;
 
 	mem->file = NULL;
-	fd_r = open(av, O_RDONLY);
+	fd_r = open(av, O_RDONLY | O_NOFOLLOW);
 	if (ft_strlen(av) < 3 || (av[ft_strlen(av) - 2] != '.' ||
 	av[ft_strlen(av) - 1] != 's') || fd_r == -1)
 		ft_exit("Bad file\nusage: ./asm [file].s", -1, mem);
