@@ -48,6 +48,7 @@ static	int	ft_while_instruction(int i, char **word_in_line, t_mem *mem, int *n)
 	unsigned char	enc_b;
 	char			*tmp;
 	int				tmp2;
+	int 			i;
 
 	enc_b = 0;
 	while (word_in_line[*n] != NULL)
@@ -56,7 +57,13 @@ static	int	ft_while_instruction(int i, char **word_in_line, t_mem *mem, int *n)
 		if (tmp != NULL)
 		{
 			tmp[0] = '\0';
-			word_in_line[*n + 1] = NULL;
+			i = *n + 1;
+			while (word_in_line[i])
+			{
+				free(word_in_line[i]);
+				word_in_line[*n + 1] = NULL;
+				i++;
+			}
 		}
 		if (word_in_line[*n][0] == '\0' || word_in_line[*n][0] == '\n')
 		{

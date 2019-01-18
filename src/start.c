@@ -31,7 +31,7 @@ int			fill_mem(t_mem *mem, char const *av)
 	if (ft_strlen(av) < 3 || (av[ft_strlen(av) - 2] != '.' ||
 	av[ft_strlen(av) - 1] != 's') || fd_r == -1)
 		ft_exit("Bad file\nusage: ./asm [file].s", -1, mem);
-	while ((cpt = read(fd_r, buffer, 1000 - 1)))
+	while ((cpt = read(fd_r, buffer, 1000 - 1)) > 0)
 	{
 		mem->nb_c += cpt;
 		tmp = ft_strjoin(mem->file, buffer);
@@ -39,6 +39,8 @@ int			fill_mem(t_mem *mem, char const *av)
 		mem->file = tmp;
 		ft_bzero(buffer, 1000);
 	}
+	if (cpt < 0)
+		ft_exit("Bad file\nusage: ./asm [file].s", -1, mem);
 	mem->data = ft_strsplit_3(mem->file, "\n");
 	mem->i = 0;
 	return (fd_r);
@@ -72,7 +74,7 @@ int			fill_header_name(t_mem *mem, int n)
 	mem->p_c += ft_strlen(mem->data[n]) - ft_strlen(start);
 	while (i < COMMENT_LENGTH && mem->p_c < mem->nb_c)
 	{
-		if (start[u] == '"' && i > 0)
+		if (start[u] == '"')
 			break ;
 		mem->header.prog_name[i] = start[u];
 		if (start[u + 1] == 0 && i < COMMENT_LENGTH)
@@ -107,7 +109,7 @@ int			fill_header_comment(t_mem *mem, int n)
 	mem->p_c += ft_strlen(mem->data[n]) - ft_strlen(start);
 	while (i < COMMENT_LENGTH && mem->p_c < mem->nb_c)
 	{
-		if (start[u] == '"' && i > 0)
+		if (start[u] == '"')
 			break ;
 		mem->header.comment[i] = start[u];
 		if (start[u + 1] == 0 && i < COMMENT_LENGTH)

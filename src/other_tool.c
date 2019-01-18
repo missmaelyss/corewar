@@ -54,6 +54,8 @@ int			ft_del_char_ptr(char **tmp)
 	int		i;
 
 	i = 0;
+	if (!(tmp[0]))
+		return (-1);
 	while (tmp[i] != NULL)
 	{
 		free(tmp[i]);

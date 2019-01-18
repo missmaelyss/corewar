@@ -40,7 +40,10 @@ void	ft_exit(char *exit_msg, int status, t_mem *mem)
 	free(mem->where_write_label);
 	ft_freetab(mem->used_label);
 	free(mem->size_used_label);
+	free(mem->to_add);
 	if (exit_msg != NULL)
+	{
 		ft_putendl(exit_msg);
-	exit(status);
+		exit(status);
+	}
 }

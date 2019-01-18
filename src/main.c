@@ -21,23 +21,23 @@
 
 static void		handle_line(int *n, char **tmp, int *good, t_mem *mem)
 {
-	if (ft_strcmp(".comment", tmp[0]) == 0)
+	if (tmp[0] && ft_strcmp(".comment", tmp[0]) == 0)
 	{
 		*n = fill_header_comment(mem, *n);
 		(*good)++;
 	}
-	else if (ft_strcmp(".name", tmp[0]) == 0)
+	else if (tmp[0] && ft_strcmp(".name", tmp[0]) == 0)
 	{
 		(*good)++;
 		*n = fill_header_name(mem, *n);
 	}
-	else if (ft_str_is_label(tmp[0]))
+	else if (tmp[0] && ft_str_is_label(tmp[0]))
 	{
 		ft_add_label(mem, tmp[0]);
 		ft_label_place(mem);
 	}
-	else if (tmp[0][0] != COMMENT_CHAR && ft_str_in_op_tab(tmp[0]) == 0
-	&& tmp[0][0] != '\0' && tmp[0][0] != ' ' && tmp[0][0] != '\n' &&
+	else if (tmp[0] && tmp[0][0] != COMMENT_CHAR && ft_str_in_op_tab(tmp[0])
+	== 0 && tmp[0][0] != '\0' && tmp[0][0] != ' ' && tmp[0][0] != '\n' &&
 	tmp[0][0] != '\t' && ft_strlen(tmp[0]) > 1)
 	{
 		ft_putstr("Lexical error at [");
@@ -89,6 +89,7 @@ static void		file_end(t_mem *mem, char const *av[], int good)
 	mem->header.prog_size = reverse_endian_int(mem->i);
 	write(fd, &(mem->header), sizeof(mem->header));
 	write(fd, mem->tmp, mem->i);
+	ft_exit(NULL, 1, mem);
 }
 
 static void		init_mem_data(int n, t_mem *mem)
@@ -115,17 +116,15 @@ int				main(int ac, char const *av[])
 		{
 			init_mem_data(n, &mem);
 			tmp = ft_strsplit_2(mem.data[n], " \t,");
-			if (tmp[0])
-			{
-				handle_line(&n, tmp, &good, &mem);
-				if ((tmp[1] && ft_str_in_op_tab(tmp[1]) != 0 &&
-				ft_str_is_label(tmp[0])) || ft_str_in_op_tab(tmp[0]) != 0)
-					instruction_in_line(n, tmp, &good, &mem);
-				ft_del_char_ptr(tmp);
-			}
+			handle_line(&n, tmp, &good, &mem);
+			if (tmp[0] && ((tmp[1] && ft_str_in_op_tab(tmp[1]) != 0 &&
+			ft_str_is_label(tmp[0])) || ft_str_in_op_tab(tmp[0]) != 0))
+				instruction_in_line(n, tmp, &good, &mem);
+			ft_del_char_ptr(tmp);
 			n++;
 		}
 		file_end(&mem, av, good);
 	}
+	while (1);
 	return (0);
 }
