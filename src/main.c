@@ -120,11 +120,10 @@ int				main(int ac, char const *av[])
 			if (tmp[0] && ((tmp[1] && ft_str_in_op_tab(tmp[1]) != 0 &&
 			ft_str_is_label(tmp[0])) || ft_str_in_op_tab(tmp[0]) != 0))
 				instruction_in_line(n, tmp, &good, &mem);
-			ft_del_char_ptr(tmp);
+			ft_freetab(tmp);
 			n++;
 		}
 		file_end(&mem, av, good);
 	}
-	while (1);
 	return (0);
 }

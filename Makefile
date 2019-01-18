@@ -4,7 +4,7 @@ CC = gcc
 
 LDFLAGS=
 
-CFLAGS = -Wall -Wextra -Werror -g
+CFLAGS = -Wall -Wextra -Werror -g 
 
 LIBFT = libft/libft.a
 

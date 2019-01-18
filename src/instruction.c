@@ -43,12 +43,21 @@ int			ft_mem_instr(int n, int i, char *word, t_mem *mem)
 		return (ft_fill_mem(n, i, word, mem));
 }
 
+static void	del_end_of_str(int u, char **word_in_line)
+{
+	while (word_in_line[u])
+	{
+		free(word_in_line[u]);
+		word_in_line[u] = NULL;
+		u++;
+	}
+}
+
 static	int	ft_while_instruction(int i, char **word_in_line, t_mem *mem, int *n)
 {
 	unsigned char	enc_b;
 	char			*tmp;
 	int				tmp2;
-	int 			i;
 
 	enc_b = 0;
 	while (word_in_line[*n] != NULL)
@@ -57,17 +66,11 @@ static	int	ft_while_instruction(int i, char **word_in_line, t_mem *mem, int *n)
 		if (tmp != NULL)
 		{
 			tmp[0] = '\0';
-			i = *n + 1;
-			while (word_in_line[i])
-			{
-				free(word_in_line[i]);
-				word_in_line[*n + 1] = NULL;
-				i++;
-			}
+			del_end_of_str(*n + 1, word_in_line);
 		}
 		if (word_in_line[*n][0] == '\0' || word_in_line[*n][0] == '\n')
 		{
-			word_in_line[*n] = NULL;
+			del_end_of_str(*n, word_in_line);
 			break ;
 		}
 		if ((tmp2 = ft_mem_instr(*n, i, word_in_line[*n], mem)) == -1)

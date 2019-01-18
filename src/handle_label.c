@@ -18,8 +18,9 @@
 
 int			ft_str_is_label(char *str)
 {
-	if ((str[ft_strlen(str) - 1] == ':') || (str[ft_strlen(str) - 2] == ':'
-			&& str[ft_strlen(str) - 1] == '\n'))
+	if ((ft_strlen(str) > 2 && str[ft_strlen(str) - 1] == ':') ||
+		(ft_strlen(str) > 3 &&
+		str[ft_strlen(str) - 2] == ':' && str[ft_strlen(str) - 1] == '\n'))
 		return (1);
 	return (0);
 }

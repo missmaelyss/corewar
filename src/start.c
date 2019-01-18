@@ -31,6 +31,7 @@ int			fill_mem(t_mem *mem, char const *av)
 	if (ft_strlen(av) < 3 || (av[ft_strlen(av) - 2] != '.' ||
 	av[ft_strlen(av) - 1] != 's') || fd_r == -1)
 		ft_exit("Bad file\nusage: ./asm [file].s", -1, mem);
+	ft_bzero(buffer, 1000);
 	while ((cpt = read(fd_r, buffer, 1000 - 1)) > 0)
 	{
 		mem->nb_c += cpt;
@@ -144,5 +145,6 @@ int			create_new_cor(char const *av)
 	name_cor[ft_strlen(av) + 1] = 'r';
 	name_cor[ft_strlen(av) + 2] = '\0';
 	fd_cor = open(name_cor, O_CREAT | O_RDWR, S_IRUSR | S_IWUSR);
+	ft_strdel(&name_cor);
 	return (fd_cor);
 }
