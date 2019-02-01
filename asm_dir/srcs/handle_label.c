@@ -56,11 +56,12 @@ int			ft_label_exist(char *word, t_mem *mem, int where)
 			|| ft_strcmp(mem->labels[n], &word[1]) == 0)
 		{
 			ret = mem->i_label[n] - where;
-			break ;
+			return (ret);
 		}
 		n++;
 	}
-	return (ret);
+	ft_exit("Label does not exist", -1, mem);
+	return (-1);
 }
 
 /*

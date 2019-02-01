@@ -146,7 +146,7 @@ int			create_new_cor(char const *av)
 	name_cor[ft_strlen(av)] = 'o';
 	name_cor[ft_strlen(av) + 1] = 'r';
 	name_cor[ft_strlen(av) + 2] = '\0';
-	fd_cor = open(name_cor, O_CREAT | O_RDWR, S_IRUSR | S_IWUSR);
+	fd_cor = open(name_cor, O_CREAT | O_RDWR | O_TRUNC, S_IRUSR | S_IWUSR);
 	ft_strdel(&name_cor);
 	return (fd_cor);
 }

@@ -88,7 +88,7 @@ static void		file_end(t_mem *mem, char const *av[], int good)
 	mem->header.prog_size = reverse_endian_int(mem->i);
 	write(fd, &(mem->header), sizeof(mem->header));
 	write(fd, mem->tmp, mem->i);
-	ft_exit(NULL, 1, mem);
+	ft_exit("New .cor created", 1, mem);
 }
 
 static void		init_mem_data(int n, t_mem *mem)

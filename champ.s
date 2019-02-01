@@ -26,7 +26,7 @@ l1: live %42
 	live %42
 
 live: live %42
-	zjmp %:live
+	zjmp %:liive
 
 l2: live %42
 	live %42
