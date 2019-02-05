@@ -108,6 +108,7 @@ typedef struct		s_mem
 	char				*tmp;
 	int					enc_b_i;
 	int					i;
+	int					good;
 	int					where;
 	char				**labels;
 	int					n_label;
@@ -125,7 +126,7 @@ void				ft_exit(char *exit_msg, int status, t_mem *mem);
 void				ft_freetab(char **tab);
 void				ft_stock_label(char *word, t_mem *mem, int size, int add);
 void				ft_label_place(t_mem *mem);
-int					ft_str_is_label(char *str);
+int					ft_str_is_label(char *str, t_mem *mem);
 int					ft_label_exist(char *word, t_mem *mem, int where);
 void				fill_label_in_mem(t_mem *mem);
 void				ft_add_label(t_mem *mem, char *str);

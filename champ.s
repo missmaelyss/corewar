@@ -1,7 +1,7 @@
 .name		"champ"
 .comment	"petit champion"
 
-l0: live %1
+l0:
 	live %1
 	ld %57672193,r2
 	ld %33569792,r3
@@ -26,7 +26,7 @@ l1: live %42
 	live %42
 
 live: live %42
-	zjmp %:liive
+	zjmp %:chouette
 
 l2: live %42
 	live %42

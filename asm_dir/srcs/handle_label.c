@@ -16,12 +16,23 @@
 **  Checking if the string is well formated
 */
 
-int			ft_str_is_label(char *str)
+int			ft_str_is_label(char *str, t_mem *mem)
 {
+	unsigned long n;
+
+	n = 0;
 	if ((ft_strlen(str) > 2 && str[ft_strlen(str) - 1] == ':')
 		|| (ft_strlen(str) > 3 && str[ft_strlen(str) - 2] == ':'
 			&& str[ft_strlen(str) - 1] == '\n'))
+	{
+		while (str && str[n] != '\0' && n < ft_strlen(str) - 2)
+		{
+			if (ft_strchr(LABEL_CHARS, str[n]) == NULL)
+				ft_exit("Wrong character in label", -1, mem);
+			n++;
+		}
 		return (1);
+	}
 	return (0);
 }
 

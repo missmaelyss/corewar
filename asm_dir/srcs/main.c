@@ -19,19 +19,19 @@
 **  char				comment[COMMENT_LENGTH + 1];
 */
 
-static void		handle_line(int *n, char **tmp, int *good, t_mem *mem)
+static void		handle_line(int *n, char **tmp, t_mem *mem)
 {
 	if (tmp[0] && ft_strcmp(".comment", tmp[0]) == 0)
 	{
 		*n = fill_header_comment(mem, *n);
-		(*good)++;
+		(mem->good)++;
 	}
 	else if (tmp[0] && ft_strcmp(".name", tmp[0]) == 0)
 	{
-		(*good)++;
+		(mem->good)++;
 		*n = fill_header_name(mem, *n);
 	}
-	else if (tmp[0] && ft_str_is_label(tmp[0]))
+	else if (tmp[0] && ft_str_is_label(tmp[0], mem))
 	{
 		if (tmp[1] && tmp[1][0] != COMMENT_CHAR && ft_str_in_op_tab(tmp[1]) == 0
 			&& tmp[1][0] != '\0' && tmp[1][0] != ' ' && tmp[1][0] != '\n'
@@ -46,9 +46,9 @@ static void		handle_line(int *n, char **tmp, int *good, t_mem *mem)
 		ft_exit("Error: Not accepted word", -1, mem);
 }
 
-static void		instruction_in_line(int n, char **tmp, int *good, t_mem *mem)
+static void		instruction_in_line(int n, char **tmp, t_mem *mem)
 {
-	if (*good < 2)
+	if (mem->good < 2)
 		ft_exit("Missing comment or name", -1, mem);
 	if (ft_str_in_op_tab(tmp[0]) != 0)
 	{
@@ -59,7 +59,7 @@ static void		instruction_in_line(int n, char **tmp, int *good, t_mem *mem)
 			ft_putstr(":1");
 			ft_exit("]", -1, mem);
 		}
-		(*good)++;
+		(mem->good)++;
 	}
 	else
 	{
@@ -70,15 +70,15 @@ static void		instruction_in_line(int n, char **tmp, int *good, t_mem *mem)
 			ft_putstr(":2");
 			ft_exit("]", -1, mem);
 		}
-		(*good)++;
+		(mem->good)++;
 	}
 }
 
-static void		file_end(t_mem *mem, char const *av[], int good)
+static void		file_end(t_mem *mem, char const *av[])
 {
 	int fd;
 
-	if (good < 3)
+	if (mem->good < 3)
 		ft_exit("Syntax error no instruction", -1, mem);
 	fill_label_in_mem(mem);
 	fd = create_new_cor(av[1]);
@@ -103,10 +103,8 @@ int				main(int ac, char const *av[])
 	t_mem	mem;
 	char	**tmp;
 	int		n;
-	int		good;
 
 	n = 0;
-	good = 0;
 	ft_bzero(&mem, sizeof(mem));
 	if (ac > 1)
 	{
@@ -115,14 +113,15 @@ int				main(int ac, char const *av[])
 		{
 			init_mem_data(n, &mem);
 			tmp = ft_strsplit_2(mem.data[n], " \t,", &mem);
-			handle_line(&n, tmp, &good, &mem);
+			handle_line(&n, tmp, &mem);
 			if (tmp[0] && ((tmp[1] && ft_str_in_op_tab(tmp[1]) != 0
-				&& ft_str_is_label(tmp[0])) || ft_str_in_op_tab(tmp[0]) != 0))
-				instruction_in_line(n, tmp, &good, &mem);
+				&& ft_str_is_label(tmp[0], &mem))
+					|| ft_str_in_op_tab(tmp[0]) != 0))
+				instruction_in_line(n, tmp, &mem);
 			ft_freetab(tmp);
 			n++;
 		}
-		file_end(&mem, av, good);
+		file_end(&mem, av);
 	}
 	return (0);
 }
